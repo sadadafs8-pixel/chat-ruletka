@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#090a0d">
+<title>Ride Hub BLE</title>
+<style>
+:root{--bg:#090a0d;--card:#15181d;--line:#2d333d;--text:#f7f8fa;--muted:#929aa6;--accent:#b9ff38;--warn:#ffd56b;--danger:#ff7c7c}*{box-sizing:border-box}body{margin:0;background:#07080a;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.app{max-width:620px;margin:auto;min-height:100vh;padding:calc(18px + env(safe-area-inset-top)) 16px 34px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px}.brand{font-weight:950;font-size:20px;display:flex;align-items:center;gap:10px}.logo{width:36px;height:36px;border-radius:12px;background:var(--accent);color:#10130d;display:grid;place-items:center;font-weight:1000}.back{color:#fff;text-decoration:none;border:1px solid var(--line);border-radius:13px;padding:10px 12px;background:#12151a}.hero{margin:28px 0 16px}.eyebrow{color:var(--accent);font-size:10px;font-weight:950;letter-spacing:.15em}.hero h1{font-size:34px;line-height:1.02;letter-spacing:-.045em;margin:7px 0}.muted{color:var(--muted);line-height:1.5;font-size:13px}.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:15px;margin-top:12px}.row{display:flex;justify-content:space-between;gap:12px;align-items:center}.badge{font-size:9px;font-weight:900;border:1px solid #4a515d;border-radius:999px;padding:6px 9px}.ok{border-color:#567629;color:var(--accent);background:#17230d}.bad{border-color:#5e4730;color:var(--warn);background:#241a0d}.field{margin-top:12px}.field label{display:block;font-size:11px;font-weight:850;margin-bottom:6px;color:#cfd4da}.field input{width:100%;min-height:50px;border-radius:14px;border:1px solid #333944;background:#0d0f13;color:#fff;padding:0 13px;font-size:16px}.buttons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.btn{min-height:52px;border-radius:15px;font-weight:900;border:0}.primary{background:var(--accent);color:#0c0f08}.secondary{background:#222731;border:1px solid #353b46;color:#fff}.btn:disabled{opacity:.45}.info{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.metric{background:#0f1216;border:1px solid #2b313a;border-radius:15px;padding:12px}.metric small{display:block;color:#7f8793;font-size:9px;margin-bottom:5px}.metric b{font-size:18px}.log{margin-top:12px;background:#0b0d10;border:1px solid #292f38;border-radius:15px;padding:12px;min-height:92px;font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;color:#bac1cb;white-space:pre-wrap;word-break:break-word}.note{margin-top:14px;border:1px solid #4b3c25;background:#21190c;border-radius:16px;padding:12px;color:#e8c87e;font-size:12px;line-height:1.45}.fine{margin-top:14px;color:#777f8a;font-size:10px;line-height:1.45;text-align:center}@media(max-width:370px){.buttons,.info{grid-template-columns:1fr}.hero h1{font-size:30px}}
+</style>
+</head>
+<body>
+<main class="app">
+  <div class="top"><div class="brand"><span class="logo">B</span>Ride Hub BLE</div><a class="back" href="/">К карте</a></div>
+  <section class="hero"><div class="eyebrow">BLUETOOTH · OWN / TEST DEVICE</div><h1>Подключение по BLE</h1><p class="muted">Режим для собственного или тестового контроллера. Он подключается к BLE-устройству и показывает стандартные данные, но не отправляет команды разблокировки чужих прокатных самокатов.</p></section>
+
+  <section class="card">
+    <div class="row"><b>Поддержка браузера</b><span id="supportBadge" class="badge bad">ПРОВЕРКА</span></div>
+    <p id="supportText" class="muted">Проверяю Web Bluetooth…</p>
+  </section>
+
+  <section class="card">
+    <b>Параметры тестового устройства</b>
+    <div class="field"><label for="serviceUuid">Service UUID</label><input id="serviceUuid" value="0000180f-0000-1000-8000-00805f9b34fb" autocomplete="off" spellcheck="false"></div>
+    <div class="field"><label for="namePrefix">Имя устройства начинается с (необязательно)</label><input id="namePrefix" placeholder="Например, MyScooter" autocomplete="off"></div>
+    <div class="buttons"><button id="connectBtn" class="btn primary" type="button">Найти и подключить</button><button id="disconnectBtn" class="btn secondary" type="button" disabled>Отключить</button></div>
+  </section>
+
+  <section class="card">
+    <div class="row"><b>Соединение</b><span id="connBadge" class="badge bad">НЕ ПОДКЛЮЧЕНО</span></div>
+    <div class="info"><div class="metric"><small>УСТРОЙСТВО</small><b id="deviceName">—</b></div><div class="metric"><small>БАТАРЕЯ</small><b id="battery">—</b></div></div>
+    <div id="log" class="log">Готов к подключению.</div>
+  </section>
+
+  <div class="note">Управляющие команды (unlock/start/stop) намеренно отключены. Их можно добавить только для вашего контроллера по его документации либо через официальный SDK/ключи оператора.</div>
+  <div class="fine">Web Bluetooth работает только в HTTPS и поддерживаемых браузерах. Safari на iPhone сейчас не предоставляет navigator.bluetooth.</div>
+</main>
+<script>
+(() => {
+  const q=s=>document.querySelector(s);
+  let device=null;
+  let server=null;
+  const batteryService='0000180f-0000-1000-8000-00805f9b34fb';
+  const batteryChar='00002a19-0000-1000-8000-00805f9b34fb';
+  function log(msg){q('#log').textContent=msg;}
+  function setConn(on){q('#connBadge').textContent=on?'ПОДКЛЮЧЕНО':'НЕ ПОДКЛЮЧЕНО';q('#connBadge').className='badge '+(on?'ok':'bad');q('#disconnectBtn').disabled=!on;}
+  function normalizeUuid(v){const s=v.trim().toLowerCase();if(/^([0-9a-f]{4})$/.test(s)) return `0000${s}-0000-1000-8000-00805f9b34fb`;if(/^([0-9a-f]{8})$/.test(s)) return `${s}-0000-1000-8000-00805f9b34fb`;if(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(s)) return s;throw new Error('Некорректный Service UUID');}
+  async function readBattery(){try{const svc=await server.getPrimaryService(batteryService);const ch=await svc.getCharacteristic(batteryChar);const value=await ch.readValue();q('#battery').textContent=`${value.getUint8(0)}%`;}catch{q('#battery').textContent='—';}}
+  async function connect(){
+    if(!navigator.bluetooth){log('Web Bluetooth недоступен в этом браузере. На iPhone Safari нужен нативный iOS-модуль/официальный SDK.');return;}
+    try{
+      const service=normalizeUuid(q('#serviceUuid').value);
+      const prefix=q('#namePrefix').value.trim();
+      const filters=prefix?[{namePrefix:prefix,services:[service]}]:[{services:[service]}];
+      log('Открываю системный выбор Bluetooth-устройства…');
+      device=await navigator.bluetooth.requestDevice({filters,optionalServices:[batteryService,service]});
+      device.addEventListener('gattserverdisconnected',()=>{setConn(false);log('Соединение разорвано.');});
+      server=await device.gatt.connect();
+      q('#deviceName').textContent=device.name||'BLE device';
+      setConn(true);
+      log(`Подключено: ${device.name||'без имени'}\nService: ${service}\nРежим: только чтение стандартных данных.`);
+      await readBattery();
+    }catch(e){setConn(false);log(`Не подключено: ${e && e.message ? e.message : String(e)}`);}
+  }
+  function disconnect(){if(device&&device.gatt&&device.gatt.connected)device.gatt.disconnect();setConn(false);q('#deviceName').textContent='—';q('#battery').textContent='—';log('Отключено.');}
+  if('bluetooth' in navigator){q('#supportBadge').textContent='ДОСТУПНО';q('#supportBadge').className='badge ok';q('#supportText').textContent='Web Bluetooth доступен. Подключение начнётся только после твоего нажатия и системного выбора устройства.';}else{q('#supportBadge').textContent='НЕТ WEB BLE';q('#supportBadge').className='badge bad';q('#supportText').textContent='Этот браузер не поддерживает Web Bluetooth. На Android используй Chrome; на iPhone Safari нужен нативный CoreBluetooth-модуль/официальный SDK.';}
+  q('#connectBtn').addEventListener('click',connect);q('#disconnectBtn').addEventListener('click',disconnect);
+})();
+</script>
+</body>
+</html>
