@@ -1,21 +1,229 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b0c0f">
-<title>Ride Hub</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0b0e">
+<title>Ride Hub Live</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
 <style>
-:root{--bg:#0b0c0f;--panel:#14171c;--line:#292e36;--text:#f6f7f8;--muted:#9299a4;--accent:#b8ff38;--danger:#ff6b6b}*{box-sizing:border-box}body{margin:0;background:#08090b;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.app{max-width:520px;min-height:100vh;margin:auto;background:var(--bg);position:relative;overflow:hidden}.top{position:absolute;z-index:5;inset:0 0 auto;padding:18px;display:flex;justify-content:space-between;align-items:center}.brand{font-weight:900;display:flex;gap:9px;align-items:center}.logo{width:34px;height:34px;display:grid;place-items:center;border-radius:11px;background:var(--accent);color:#0a0c0e}.chip{border:1px solid #3a4049;background:#101216cc;color:#fff;border-radius:999px;padding:8px 11px;font-size:11px;font-weight:900}.map{height:390px;position:relative;background:linear-gradient(145deg,#1a1d22,#0e1115);overflow:hidden}.grid{position:absolute;inset:-50px;background-image:linear-gradient(#ffffff09 1px,transparent 1px),linear-gradient(90deg,#ffffff09 1px,transparent 1px);background-size:34px 34px;transform:rotate(-8deg)}.road{position:absolute;height:38px;width:650px;background:#272c33;border-radius:50px;border:1px solid #363c45;box-shadow:inset 0 0 0 8px #20242a}.r1{left:-90px;top:145px;transform:rotate(16deg)}.r2{left:-110px;top:275px;transform:rotate(-22deg)}.pin{position:absolute;width:58px;height:58px;border:5px solid var(--accent);background:#101216;color:#fff;border-radius:50%;font-weight:950;display:grid;place-items:center;align-content:center;box-shadow:0 10px 28px #0008}.pin small{font-size:9px}.u{left:20%;top:34%}.y{right:16%;top:25%;border-color:#ffd84f}.w{right:34%;top:61%;border-color:#70dfff}.me{position:absolute;left:49%;top:50%;width:20px;height:20px;border-radius:50%;border:5px solid #fff;background:#4ea1ff;box-shadow:0 0 0 9px #4ea1ff30}.sheet{margin-top:-38px;position:relative;z-index:4;min-height:580px;background:linear-gradient(#15181d,#0e1014);border-radius:28px 28px 0 0;padding:15px 18px 28px}.handle{width:42px;height:5px;background:#3a3f47;border-radius:20px;margin:0 auto 16px}.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.tab{min-height:50px;border:1px solid #292e36;background:#191c21;color:#fff;border-radius:14px;font-weight:850}.tab small{display:block;font-size:8px;color:#89919d;margin-top:2px}.tab.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}.tab.on small{color:var(--accent)}.eyebrow{color:var(--accent);font-size:10px;font-weight:950;letter-spacing:.17em;margin:18px 0 6px}.hero{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}h1,h2{margin:0;letter-spacing:-.045em}h1{font-size:34px}.muted{color:var(--muted);line-height:1.45}.orb{width:56px;height:56px;border-radius:18px;background:var(--accent);color:#11140d;display:grid;place-items:center;font-size:22px;font-weight:950}.primary,.secondary,.danger{min-height:54px;border-radius:16px;border:0;font:inherit;font-weight:900}.primary{width:100%;background:var(--accent);color:#0c0e0a;margin-top:18px}.secondary{background:#242831;color:#fff;border:1px solid #323841}.danger{background:#2a1b1d;color:#ff8181;border:1px solid #4a292e}.manual{display:flex;gap:8px;margin-top:11px}.manual input{min-width:0;flex:1;background:#0b0d11;border:1px solid #303640;border-radius:15px;color:#fff;padding:0 14px;font-size:16px}.notice{margin-top:12px;border:1px solid #292e36;background:#171a20;border-radius:14px;padding:11px;color:#9aa2ad;font-size:11px;line-height:1.45}.card{margin-top:15px;border:1px solid #292e36;background:#171a20;border-radius:18px;padding:14px}.row{display:flex;justify-content:space-between;gap:10px;align-items:center}.battery{color:var(--accent);font-weight:950}.rates{display:grid;gap:8px;margin-top:12px}.rate{display:flex;justify-content:space-between;gap:8px;padding:12px;border:1px solid #303640;border-radius:14px;background:#12151a}.rate.on{border-color:var(--accent)}.ride{text-align:center}.timer{font-size:70px;font-weight:950;letter-spacing:-.07em;margin:8px 0}.cost{color:var(--accent);font-size:20px;font-weight:900}.controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px}.done{width:76px;height:76px;border-radius:24px;background:var(--accent);color:#10130c;display:grid;place-items:center;font-size:38px;font-weight:950;margin:24px auto 16px}.hidden{display:none!important}.fine{font-size:10px;color:#777f8b;text-align:center;margin-top:12px}
+:root{--bg:#090a0d;--panel:#111318;--line:#292e37;--text:#f7f8fa;--muted:#969eaa;--accent:#b9ff38;--warn:#ffd55b;--danger:#ff7474;--blue:#72d7ff}*{box-sizing:border-box}html,body{margin:0;background:#07080a;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input{font:inherit}.app{max-width:620px;min-height:100vh;margin:auto;background:var(--bg);position:relative}.mapWrap{height:540px;position:relative;background:#17191e}.map{height:100%;width:100%;z-index:1}.topbar{position:absolute;z-index:500;left:0;right:0;top:0;padding:calc(12px + env(safe-area-inset-top)) 14px 10px;display:flex;justify-content:space-between;gap:10px;pointer-events:none}.brand,.mapMode{pointer-events:auto;background:#0b0d11e8;border:1px solid #343943;color:#fff;min-height:44px;border-radius:15px;display:flex;align-items:center;backdrop-filter:blur(14px)}.brand{padding:0 13px;font-weight:900;gap:9px}.logo{width:27px;height:27px;border-radius:9px;background:var(--accent);color:#10130d;display:grid;place-items:center;font-weight:1000}.mapMode{padding:0 12px;font-weight:850}.mapActions{position:absolute;z-index:500;right:14px;bottom:64px;display:grid;gap:8px}.mapBtn{width:48px;height:48px;border-radius:15px;border:1px solid #343943;background:#0b0d11e8;color:#fff;font-size:20px;backdrop-filter:blur(14px)}.mapBtn:active{transform:scale(.97)}.livebar{position:absolute;z-index:500;left:14px;right:14px;bottom:14px;display:flex;gap:8px;align-items:center}.livepill{background:#0b0d11e8;border:1px solid #343943;border-radius:14px;padding:9px 11px;font-size:11px;font-weight:850;backdrop-filter:blur(14px);min-width:0}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:#707783}.dot.live{background:var(--accent);box-shadow:0 0 0 4px #b9ff3820}.dot.wait{background:var(--warn)}.sheet{position:relative;z-index:5;margin-top:-24px;background:linear-gradient(#15181d,#0a0c10 65%);border-radius:28px 28px 0 0;min-height:480px;padding:13px 16px 34px;box-shadow:0 -10px 35px #0007}.handle{width:44px;height:5px;border-radius:99px;background:#3b414b;margin:0 auto 15px}.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.tab{min-height:52px;border:1px solid #2c323b;border-radius:15px;background:#171a20;color:#fff;font-weight:900;padding:7px 4px}.tab small{display:block;margin-top:3px;font-size:8px;color:#7f8793}.tab.on{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}.tab.on small{color:var(--accent)}.header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-top:18px}.eyebrow{font-size:10px;font-weight:950;letter-spacing:.14em;color:var(--accent);margin:0 0 5px}.title{font-size:31px;line-height:1.02;letter-spacing:-.045em;margin:0}.muted{color:var(--muted);font-size:13px;line-height:1.45}.count{min-width:66px;height:66px;border-radius:20px;border:1px solid #303640;background:#181c22;display:grid;place-items:center;text-align:center}.count b{font-size:24px}.count small{font-size:8px;color:#8e96a2;display:block}.actions{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:15px}.primary,.secondary{min-height:52px;border-radius:16px;font-weight:900}.primary{border:0;background:var(--accent);color:#0c0f08;padding:0 18px}.secondary{border:1px solid #303640;background:#1b1f26;color:#fff;padding:0 16px}.status{margin-top:12px;border:1px solid #2a3039;border-radius:16px;background:#14171c;padding:13px}.statusHead{display:flex;justify-content:space-between;gap:10px;align-items:center;font-weight:900}.badge{font-size:9px;border-radius:99px;border:1px solid #38404a;padding:5px 8px;color:#b8c0cb}.badge.live{border-color:#557c24;color:var(--accent);background:#17230d}.badge.locked{border-color:#5a4732;color:#ffd279;background:#241b10}.status p{margin:8px 0 0}.scooterCard{display:none;margin-top:13px;border:1px solid #343b45;border-radius:18px;background:#171b21;padding:14px}.scooterCard.show{display:block}.row{display:flex;align-items:center;justify-content:space-between;gap:12px}.sid{font-size:23px;font-weight:950}.battery{font-weight:950;color:var(--accent)}.meta{margin-top:7px;color:#9aa2ae;font-size:12px}.legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;font-size:10px;color:#858e9b}.legend span:before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}.lgU:before{background:var(--accent)}.lgY:before{background:#ffd84f}.lgW:before{background:var(--blue)}.foot{margin-top:14px;text-align:center;color:#737b87;font-size:10px;line-height:1.45}.leaflet-control-attribution{font-size:8px!important;background:#090b0dcc!important;color:#d4d8de!important}.leaflet-control-attribution a{color:#fff!important}.leaflet-control-zoom a{background:#0c0e12e8!important;color:#fff!important;border-color:#343943!important}.scooter-marker{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;border:4px solid var(--accent);background:#101216;color:#fff;font-weight:950;box-shadow:0 8px 24px #000b}.scooter-marker.yandex{border-color:#ffd84f}.scooter-marker.whoosh{border-color:var(--blue)}.user-marker{width:20px;height:20px;border-radius:50%;background:#3187ff;border:4px solid #fff;box-shadow:0 0 0 8px #3187ff45}.leaflet-div-icon{background:transparent!important;border:0!important}@media(max-width:380px){.mapWrap{height:490px}.title{font-size:27px}.mapMode{font-size:11px}.brand{font-size:13px}}
 </style>
 </head>
-<body><main class="app">
-<header class="top"><div class="brand"><span class="logo">R</span>Ride Hub</div><span class="chip">DEMO</span></header>
-<section class="map"><div class="grid"></div><div class="road r1"></div><div class="road r2"></div><button class="pin u" data-p="urent">U<small>82%</small></button><button class="pin y" data-p="yandex">Я<small>76%</small></button><button class="pin w" data-p="whoosh">W<small>69%</small></button><div class="me"></div></section>
-<section class="sheet"><div class="handle"></div>
-<div id="home"><div class="tabs"><button class="tab on" data-p="urent">Юрент<small>API READY</small></button><button class="tab" data-p="yandex">Яндекс Go<small>DEMO</small></button><button class="tab" data-p="whoosh">Whoosh<small>DEMO</small></button></div><div class="hero"><div><p class="eyebrow" id="eyebrow">ЮРЕНТ</p><h1>Возьми самокат</h1><p class="muted">Один интерфейс для трёх сервисов</p></div><div class="orb" id="orb">U</div></div><button class="primary" id="scan">▣ Сканировать QR</button><form class="manual" id="form"><input id="id" value="S.240731"><button class="secondary">Открыть</button></form><div class="notice" id="notice">Юрент: серверный адаптер подготовлен под официальный Partner API. В этой открытой демо-версии реальный самокат не разблокируется.</div></div>
-<div id="scooter" class="hidden"><p class="eyebrow" id="sp">ЮРЕНТ</p><div class="card"><div class="row"><div><h2 id="sid">S.240731</h2><p class="muted" id="model">Юрент Scooter</p></div><div class="battery" id="bat">82% · ≈31 км</div></div><div class="rates"><button class="rate on" data-rate="minute"><b>Поминутный</b><span id="minute">8 ₽/мин</span></button><button class="rate" data-rate="fixed"><b id="fixedName">На час</b><span id="fixed">399 ₽</span></button></div></div><button class="primary" id="start">Начать demo-поездку</button><button class="secondary" id="back" style="width:100%;margin-top:8px">← Назад</button><p class="fine">LIVE включается только через официальный API/SDK выбранного сервиса.</p></div>
-<div id="ride" class="ride hidden"><p class="eyebrow" id="rideState">ПОЕЗДКА ИДЁТ</p><div class="timer" id="timer">00:00</div><div class="cost" id="cost">50 ₽</div><p class="muted" id="rideMeta">Юрент · S.240731</p><div class="controls"><button class="secondary" id="pause">Ⅱ Пауза</button><button class="danger" id="finish">Завершить</button></div><button class="secondary hidden" id="resume" style="width:100%;margin-top:8px">▶ Продолжить</button></div>
-<div id="done" class="ride hidden"><div class="done">✓</div><h2>Поездка завершена</h2><p class="muted" id="summary"></p><button class="primary" id="again">Новая поездка</button></div>
-</section></main>
+<body>
+<main class="app">
+  <section class="mapWrap">
+    <div id="map" class="map"></div>
+    <div class="topbar">
+      <div class="brand"><span class="logo">R</span>Ride Hub Live</div>
+      <button id="layerBtn" class="mapMode" type="button">🛰 Спутник</button>
+    </div>
+    <div class="mapActions">
+      <button id="locateBtn" class="mapBtn" type="button" aria-label="Моё местоположение">⌖</button>
+      <button id="refreshMapBtn" class="mapBtn" type="button" aria-label="Обновить самокаты">↻</button>
+    </div>
+    <div class="livebar"><div id="mapStatus" class="livepill"><span class="dot wait"></span>Проверяю live-доступ…</div></div>
+  </section>
+
+  <section class="sheet">
+    <div class="handle"></div>
+    <div class="tabs">
+      <button class="tab on" data-provider="urent" type="button">Юрент<small>OFFICIAL API</small></button>
+      <button class="tab" data-provider="yandex" type="button">Яндекс Go<small>PARTNER ACCESS</small></button>
+      <button class="tab" data-provider="whoosh" type="button">Whoosh<small>PARTNER ACCESS</small></button>
+    </div>
+
+    <div class="header">
+      <div><p id="eyebrow" class="eyebrow">ЮРЕНТ · LIVE MAP</p><h1 class="title">Самокаты рядом</h1><p class="muted">Карта показывает только точки, полученные от официального live API выбранного сервиса.</p></div>
+      <div class="count"><div><b id="count">—</b><small>НАЙДЕНО</small></div></div>
+    </div>
+
+    <div class="actions">
+      <button id="refreshBtn" class="primary" type="button">Обновить рядом</button>
+      <button id="centerBtn" class="secondary" type="button">⌖</button>
+    </div>
+
+    <div class="status">
+      <div class="statusHead"><span id="providerName">Юрент</span><span id="providerBadge" class="badge locked">ПРОВЕРКА</span></div>
+      <p id="providerText" class="muted">Проверяю подключение к партнёрскому API.</p>
+    </div>
+
+    <div id="scooterCard" class="scooterCard">
+      <div class="row"><span id="scooterId" class="sid">S.000000</span><span id="scooterBattery" class="battery">—%</span></div>
+      <div id="scooterMeta" class="meta">Данные live API</div>
+      <button id="rentBtn" class="primary" type="button" style="width:100%;margin-top:12px" disabled>Начать аренду</button>
+    </div>
+
+    <div class="legend"><span class="lgU">Юрент</span><span class="lgY">Яндекс</span><span class="lgW">Whoosh</span></div>
+    <div class="foot">Спутниковый слой: Esri World Imagery. Для реального старта поездки нужны официальные клиентские credentials/SDK провайдера; Ride Hub не использует обходы или скрытые API.</div>
+  </section>
+</main>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script>
-const P={urent:{name:'Юрент',e:'ЮРЕНТ',o:'U',id:'S.240731',model:'Юрент Scooter',bat:'82% · ≈31 км',m:8,f:399,fn:'На час',notice:'Юрент: серверный адаптер подготовлен под официальный Partner API. В этой открытой демо-версии реальный самокат не разблокируется.'},yandex:{name:'Яндекс Go',e:'ЯНДЕКС GO',o:'Я',id:'Y.40218',model:'Яндекс Go Scooter',bat:'76% · ≈27 км',m:9,f:249,fn:'Пакет 30 минут',notice:'Яндекс Go: интерфейс готов. Реальный запуск включается только после официального доступа к самокатной интеграции Яндекса.'},whoosh:{name:'Whoosh',e:'WHOOSH',o:'W',id:'A7K2',model:'Whoosh Scooter',bat:'69% · ≈24 км',m:8,f:349,fn:'Часовой',notice:'Whoosh: интерфейс готов. Реальный запуск включается только после официального партнёрского API/SDK Whoosh.'}};let provider='urent',rate='minute',startAt=0,paused=false,pauseAt=0,pausedMs=0,tick;const q=s=>document.querySelector(s),qa=s=>[...document.querySelectorAll(s)];function show(id){['home','scooter','ride','done'].forEach(x=>q('#'+x).classList.toggle('hidden',x!==id))}function select(p){provider=p;const x=P[p];qa('.tab').forEach(b=>b.classList.toggle('on',b.dataset.p===p));q('#eyebrow').textContent=x.e;q('#orb').textContent=x.o;q('#id').value=x.id;q('#notice').textContent=x.notice}function openScooter(){const x=P[provider];q('#sp').textContent=x.e;q('#sid').textContent=q('#id').value.trim().toUpperCase()||x.id;q('#model').textContent=x.model;q('#bat').textContent=x.bat;q('#minute').textContent=x.m+' ₽/мин';q('#fixed').textContent=x.f+' ₽';q('#fixedName').textContent=x.fn;show('scooter')}function update(){let ms=(paused?pauseAt:Date.now())-startAt-pausedMs;ms=Math.max(0,ms);const s=Math.floor(ms/1000),m=Math.floor(s/60),ss=s%60;q('#timer').textContent=String(m).padStart(2,'0')+':'+String(ss).padStart(2,'0');const x=P[provider];q('#cost').textContent=(rate==='fixed'?x.f:50+Math.ceil(s/60)*x.m)+' ₽'}qa('.tab,.pin').forEach(b=>b.addEventListener('click',()=>{select(b.dataset.p);if(b.classList.contains('pin'))openScooter()}));q('#form').addEventListener('submit',e=>{e.preventDefault();openScooter()});q('#scan').addEventListener('click',()=>openScooter());qa('.rate').forEach(b=>b.addEventListener('click',()=>{rate=b.dataset.rate;qa('.rate').forEach(x=>x.classList.toggle('on',x===b))}));q('#back').addEventListener('click',()=>show('home'));q('#start').addEventListener('click',()=>{startAt=Date.now();paused=false;pausedMs=0;q('#rideMeta').textContent=P[provider].name+' · '+q('#sid').textContent;q('#rideState').textContent='ПОЕЗДКА ИДЁТ';q('#pause').classList.remove('hidden');q('#finish').classList.remove('hidden');q('#resume').classList.add('hidden');show('ride');update();clearInterval(tick);tick=setInterval(update,1000)});q('#pause').addEventListener('click',()=>{paused=true;pauseAt=Date.now();q('#rideState').textContent='САМОКАТ НА ПАУЗЕ';q('#pause').classList.add('hidden');q('#finish').classList.add('hidden');q('#resume').classList.remove('hidden');update()});q('#resume').addEventListener('click',()=>{pausedMs+=Date.now()-pauseAt;paused=false;q('#rideState').textContent='ПОЕЗДКА ИДЁТ';q('#pause').classList.remove('hidden');q('#finish').classList.remove('hidden');q('#resume').classList.add('hidden');update()});q('#finish').addEventListener('click',()=>{clearInterval(tick);update();q('#summary').textContent=P[provider].name+' · '+q('#sid').textContent+' · '+q('#timer').textContent+' · '+q('#cost').textContent;show('done')});q('#again').addEventListener('click',()=>show('home'));select('urent');
-</script></body></html>
+(() => {
+  const API = 'https://ride-hub-live-api.onrender.com';
+  const providers = {
+    urent:{name:'Юрент', eyebrow:'ЮРЕНТ · LIVE MAP', cls:'urent'},
+    yandex:{name:'Яндекс Go', eyebrow:'ЯНДЕКС GO · LIVE MAP', cls:'yandex'},
+    whoosh:{name:'Whoosh', eyebrow:'WHOOSH · LIVE MAP', cls:'whoosh'}
+  };
+  let provider = 'urent';
+  let layerMode = 'satellite';
+  let userMarker = null;
+  let scooterMarkers = [];
+  let providerStatus = {};
+
+  const q = s => document.querySelector(s);
+  const qa = s => [...document.querySelectorAll(s)];
+
+  const map = L.map('map', {zoomControl:true, attributionControl:true}).setView([55.751244,37.618423], 15);
+  const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom:19,
+    attribution:'Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics'
+  });
+  const street = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom:19,
+    attribution:'© OpenStreetMap contributors'
+  });
+  satellite.addTo(map);
+
+  function setMapMessage(text, kind='wait') {
+    q('#mapStatus').innerHTML = `<span class="dot ${kind}"></span>${text}`;
+  }
+  function setProviderMessage(text, live=false) {
+    const badge=q('#providerBadge');
+    badge.textContent=live?'LIVE':'НЕТ ДОСТУПА';
+    badge.className='badge '+(live?'live':'locked');
+    q('#providerText').textContent=text;
+  }
+  function clearScooters() {
+    scooterMarkers.forEach(m=>map.removeLayer(m));
+    scooterMarkers=[];
+    q('#count').textContent='—';
+    q('#scooterCard').classList.remove('show');
+  }
+  function markerIcon(p) {
+    const letter = p==='urent'?'U':p==='yandex'?'Я':'W';
+    return L.divIcon({className:'leaflet-div-icon',html:`<div class="scooter-marker ${p}">${letter}</div>`,iconSize:[44,44],iconAnchor:[22,22]});
+  }
+  function showScooter(s) {
+    q('#scooterId').textContent=s.id;
+    q('#scooterBattery').textContent=s.battery==null?'заряд —':`${s.battery}%`;
+    q('#scooterMeta').textContent=[providers[provider].name,s.model||'Самокат',s.battery==null?'':`заряд ${s.battery}%`].filter(Boolean).join(' · ');
+    q('#rentBtn').disabled=true;
+    q('#rentBtn').textContent='Старт аренды — после клиентского API';
+    q('#scooterCard').classList.add('show');
+  }
+  function renderScooters(items) {
+    clearScooters();
+    for (const s of items) {
+      if(!Number.isFinite(Number(s.lat))||!Number.isFinite(Number(s.lng))) continue;
+      const marker=L.marker([Number(s.lat),Number(s.lng)],{icon:markerIcon(provider)}).addTo(map);
+      marker.on('click',()=>showScooter(s));
+      scooterMarkers.push(marker);
+    }
+    q('#count').textContent=String(scooterMarkers.length);
+    if(scooterMarkers.length) setMapMessage(`${providers[provider].name}: ${scooterMarkers.length} live`, 'live');
+    else setMapMessage(`${providers[provider].name}: рядом нет доступных`, 'live');
+  }
+
+  async function readStatuses() {
+    try {
+      const r=await fetch(`${API}/api/providers`,{cache:'no-store'});
+      if(!r.ok) throw new Error('status');
+      const data=await r.json();
+      providerStatus=data.providers||{};
+      updateProviderStatus();
+    } catch(e) {
+      setProviderMessage('Live-backend временно недоступен. Карта продолжает работать.',false);
+      setMapMessage('Live-backend недоступен','wait');
+    }
+  }
+  function updateProviderStatus() {
+    const st=providerStatus[provider]||{};
+    if(st.live) setProviderMessage('Официальный live API подключён. Точки на карте обновляются по текущему центру.',true);
+    else if(provider==='urent' && st.reason==='nearby_endpoint_required') setProviderMessage('Партнёрские credentials есть, но нужно добавить выданный Юрент endpoint списка транспорта.',false);
+    else if(provider==='urent') setProviderMessage('Для реальных точек Юрент нужны gateway, login и password, которые Юрент выдаёт партнёру.',false);
+    else setProviderMessage('Для реальных точек нужен официальный самокатный Partner API/SDK этого сервиса.',false);
+  }
+
+  async function refreshScooters() {
+    clearScooters();
+    updateProviderStatus();
+    const center=map.getCenter();
+    setMapMessage(`Обновляю ${providers[provider].name}…`,'wait');
+    try {
+      const u=new URL(`${API}/api/scooters`);
+      u.searchParams.set('provider',provider);
+      u.searchParams.set('lat',center.lat.toFixed(6));
+      u.searchParams.set('lng',center.lng.toFixed(6));
+      u.searchParams.set('radius','900');
+      const r=await fetch(u,{cache:'no-store'});
+      const data=await r.json().catch(()=>({}));
+      if(!r.ok) {
+        if(data.error==='partner_access_required') throw new Error('partner_access_required');
+        if(data.error==='nearby_endpoint_required') throw new Error('nearby_endpoint_required');
+        if(data.error==='official_partner_api_required') throw new Error('official_partner_api_required');
+        throw new Error('provider_unavailable');
+      }
+      renderScooters(Array.isArray(data.scooters)?data.scooters:[]);
+      setProviderMessage(`LIVE: обновлено ${new Date().toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})}.`,true);
+    } catch(e) {
+      q('#count').textContent='0';
+      if(e.message==='partner_access_required') {
+        setMapMessage('Юрент: нужен партнёрский доступ','wait');
+        setProviderMessage('Карта готова, но реальные точки Юрент сервер отдаст только после добавления официальных Partner credentials.',false);
+      } else if(e.message==='nearby_endpoint_required') {
+        setMapMessage('Юрент: нужен endpoint транспорта','wait');
+        setProviderMessage('Credentials подключены, осталось указать выданный Юрент метод получения транспорта рядом.',false);
+      } else if(e.message==='official_partner_api_required') {
+        setMapMessage(`${providers[provider].name}: нужен Partner API`,'wait');
+        setProviderMessage('Публичного разрешённого live-feed самокатов для этой интеграции сейчас не подключено.',false);
+      } else {
+        setMapMessage('Не удалось обновить live-точки','wait');
+        setProviderMessage('Провайдер временно не ответил. Повтори обновление позже.',false);
+      }
+    }
+  }
+
+  function locate() {
+    if(!navigator.geolocation){setMapMessage('Геолокация не поддерживается','wait');return;}
+    setMapMessage('Определяю твоё место…','wait');
+    navigator.geolocation.getCurrentPosition(pos=>{
+      const ll=[pos.coords.latitude,pos.coords.longitude];
+      map.setView(ll,16);
+      if(userMarker) map.removeLayer(userMarker);
+      const icon=L.divIcon({className:'leaflet-div-icon',html:'<div class="user-marker"></div>',iconSize:[20,20],iconAnchor:[10,10]});
+      userMarker=L.marker(ll,{icon,zIndexOffset:1000}).addTo(map);
+      setMapMessage('Местоположение найдено','live');
+      refreshScooters();
+    },()=>setMapMessage('Не удалось получить геопозицию','wait'),{enableHighAccuracy:true,timeout:10000,maximumAge:15000});
+  }
+
+  qa('.tab').forEach(btn=>btn.addEventListener('click',()=>{
+    provider=btn.dataset.provider;
+    qa('.tab').forEach(x=>x.classList.toggle('on',x===btn));
+    q('#providerName').textContent=providers[provider].name;
+    q('#eyebrow').textContent=providers[provider].eyebrow;
+    clearScooters();
+    updateProviderStatus();
+    refreshScooters();
+  }));
+  q('#layerBtn').addEventListener('click',()=>{
+    if(layerMode==='satellite'){
+      map.removeLayer(satellite);street.addTo(map);layerMode='street';q('#layerBtn').textContent='🗺 Карта';
+    }else{
+      map.removeLayer(street);satellite.addTo(map);layerMode='satellite';q('#layerBtn').textContent='🛰 Спутник';
+    }
+  });
+  q('#locateBtn').addEventListener('click',locate);
+  q('#centerBtn').addEventListener('click',locate);
+  q('#refreshBtn').addEventListener('click',refreshScooters);
+  q('#refreshMapBtn').addEventListener('click',refreshScooters);
+  map.on('moveend',()=>{q('#scooterCard').classList.remove('show')});
+
+  readStatuses().then(refreshScooters);
+})();
+</script>
+</body>
+</html>
