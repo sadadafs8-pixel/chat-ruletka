@@ -3,13 +3,25 @@ const fs=require('fs');
 const path=require('path');
 const TOKEN=process.env.TELEGRAM_BOT_TOKEN;
 const PORT=process.env.PORT||10000;
-const BASE='https://zub-vpn-bot.onrender.com';
 const APP='https://ride-hub-qr-test.onrender.com';
 const TG=TOKEN?`https://api.telegram.org/bot${TOKEN}`:'';
 const BANNER=Buffer.from(fs.readFileSync(path.join(__dirname,'banner.b64'),'utf8').trim(),'base64');
 
-async function api(method,body){if(!TOKEN)return null;try{return await fetch(`${TG}/${method}`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json())}catch(e){console.error(method,e.message)}}
-
+async function api(method,body){if(!TOKEN)return null;try{return await fetch(`${TG}/${method}`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json())}catch(e){console.error(method,e.message);return null}}
+async function sendBanner(chatId,caption){
+ try{
+  const form=new FormData();
+  form.append('chat_id',String(chatId));
+  form.append('caption',caption);
+  form.append('parse_mode','HTML');
+  form.append('photo',new Blob([BANNER],{type:'image/jpeg'}),'zub-banner.jpg');
+  form.append('reply_markup',JSON.stringify({inline_keyboard:[[{text:'🦷 ОТКРЫТЬ ZUB',web_app:{url:APP}}]]}));
+  const r=await fetch(`${TG}/sendPhoto`,{method:'POST',body:form});
+  const j=await r.json();
+  console.log('sendPhoto',j.ok,j.description||'ok');
+  return j;
+ }catch(e){console.error('sendBanner',e.message);return null}
+}
 async function setup(){
  if(!TOKEN)return console.log('TELEGRAM_BOT_TOKEN missing');
  await api('deleteWebhook',{drop_pending_updates:false});
@@ -26,15 +38,11 @@ async function handle(m){
  if(text==='/start'){
   const name=(m.from&&m.from.first_name)||'друг';
   const caption=`🦷 <b>Добро пожаловать в ZUB VPN, ${esc(name)}!</b>\n\nВыбери приложение или страну — ZUB поможет подобрать подходящий регион.\n\n⚡ Быстрый выбор  •  🌍 Все страны\n🎮 Игры и стриминг  •  🛡 Понятные настройки\n\n<b>Нажми ниже 👇</b>`;
-  const r=await api('sendPhoto',{chat_id:m.chat.id,photo:`${BASE}/banner.jpg?v=2`,caption,parse_mode:'HTML',reply_markup:{inline_keyboard:[[{text:'🦷 ОТКРЫТЬ ZUB',web_app:{url:APP}}]]}});
+  const r=await sendBanner(m.chat.id,caption);
   if(!r||!r.ok) await api('sendMessage',{chat_id:m.chat.id,parse_mode:'HTML',text:caption,reply_markup:{inline_keyboard:[[{text:'🦷 ОТКРЫТЬ ZUB',web_app:{url:APP}}]]}});
  } else if(text==='/app') await api('sendMessage',{chat_id:m.chat.id,text:'🦷 Открыть ZUB:',reply_markup:{inline_keyboard:[[{text:'🦷 ОТКРЫТЬ ZUB',web_app:{url:APP}}]]}});
  else if(text==='/help') await api('sendMessage',{chat_id:m.chat.id,text:'Нажми «🦷 Открыть ZUB» внизу или используй /app.'});
 }
 function esc(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
-
-const server=http.createServer((req,res)=>{
- if(req.url.startsWith('/banner.jpg')){res.writeHead(200,{'content-type':'image/jpeg','cache-control':'public,max-age=300'});return res.end(BANNER)}
- res.writeHead(200,{'content-type':'application/json'});res.end(JSON.stringify({ok:true,service:'zub-vpn-bot'}));
-});
+const server=http.createServer((req,res)=>{res.writeHead(200,{'content-type':'application/json'});res.end(JSON.stringify({ok:true,service:'zub-vpn-bot'}));});
 server.listen(PORT,setup);
