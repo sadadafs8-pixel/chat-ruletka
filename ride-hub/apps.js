@@ -81,3 +81,28 @@ window.ZUB_APPS=[
  document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-c]');if(!b)return;selected=b.dataset.c||selected;window.ZUB_SELECTED_COUNTRY=selected;const c=(window.MINT_COUNTRIES||[]).find(x=>x.c===selected);const el=document.querySelector('#zubPayCountry');if(el)el.textContent=flag(selected)+' '+(c?c.n:selected)});
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else setTimeout(mount,0);
 })();
+
+(()=>{
+ function setupNav(){
+  const nav=document.querySelector('.nav');
+  if(!nav)return;
+  const buttons=[...nav.querySelectorAll('button')];
+  const cards=[...document.querySelectorAll('.card')];
+  const home=document.querySelector('.top')||document.body;
+  const demand=cards.find(x=>x.textContent.includes('ZUB Demand Network'));
+  const routes=cards.find(x=>x.classList.contains('route'))||cards[0];
+  const settings=cards.find(x=>x.textContent.includes('Защита'))||cards[cards.length-1];
+  const targets=[home,demand,routes,settings];
+  buttons.forEach((btn,i)=>btn.addEventListener('click',()=>{
+   buttons.forEach(b=>b.classList.remove('active'));
+   btn.classList.add('active');
+   const target=targets[i];
+   if(target){
+    target.scrollIntoView({behavior:'smooth',block:i===0?'start':'center'});
+    if(i>0){target.animate([{transform:'scale(1)'},{transform:'scale(1.015)'},{transform:'scale(1)'}],{duration:320,easing:'ease-out'});}
+   }
+   try{const tg=window.Telegram&&Telegram.WebApp;tg&&tg.HapticFeedback&&tg.HapticFeedback.selectionChanged()}catch(e){}
+  }));
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(setupNav,0));else setTimeout(setupNav,0);
+})();
