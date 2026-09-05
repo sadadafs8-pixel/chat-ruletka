@@ -97,12 +97,48 @@ window.ZUB_APPS=[
    buttons.forEach(b=>b.classList.remove('active'));
    btn.classList.add('active');
    const target=targets[i];
-   if(target){
-    target.scrollIntoView({behavior:'smooth',block:i===0?'start':'center'});
-    if(i>0){target.animate([{transform:'scale(1)'},{transform:'scale(1.015)'},{transform:'scale(1)'}],{duration:320,easing:'ease-out'});}
-   }
+   if(target){target.scrollIntoView({behavior:'smooth',block:i===0?'start':'center'});if(i>0&&target.animate)target.animate([{transform:'scale(1)'},{transform:'scale(1.015)'},{transform:'scale(1)'}],{duration:320,easing:'ease-out'});}
    try{const tg=window.Telegram&&Telegram.WebApp;tg&&tg.HapticFeedback&&tg.HapticFeedback.selectionChanged()}catch(e){}
   }));
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(setupNav,0));else setTimeout(setupNav,0);
+})();
+
+(()=>{
+ function setupTapper(){
+  const power=document.querySelector('#power');
+  const hero=document.querySelector('.hero');
+  if(!power||!hero||document.querySelector('#zubTapTime'))return;
+  document.documentElement.style.touchAction='manipulation';
+  document.body.style.touchAction='manipulation';
+  power.style.touchAction='manipulation';
+  power.style.userSelect='none';
+  power.style.webkitUserSelect='none';
+  power.style.webkitTouchCallout='none';
+  const st=document.createElement('style');
+  st.textContent='.zubtapbar{margin:10px auto 0;max-width:320px;padding:10px 12px;border:1px solid #2a6654;background:#07110e;border-radius:16px}.zubtaplabel{font-size:9px;color:#78958a;letter-spacing:1.2px}.zubtaptime{font-size:24px;font-weight:950;margin-top:2px}.zubtaphint{font-size:9px;color:#78958a;margin-top:2px}.zubpop{position:fixed;z-index:9999;pointer-events:none;color:#6fffd0;font-weight:950;font-size:18px;text-shadow:0 0 14px #6fffd0;animation:zubfly .65s ease-out forwards}@keyframes zubfly{0%{opacity:0;transform:translate(-50%,-20%) scale(.7)}20%{opacity:1}100%{opacity:0;transform:translate(-50%,-120%) scale(1.15)}}.power.zubtap{transform:scale(.965)!important;box-shadow:0 0 110px #46ffc477!important}';
+  document.head.appendChild(st);
+  let seconds=Math.max(0,Number(localStorage.getItem('zub_free_seconds')||0));
+  let taps=0,last=0;
+  const bar=document.createElement('div');bar.className='zubtapbar';bar.innerHTML='<div class="zubtaplabel">БЕСПЛАТНОГО VPN НАТАПАНО</div><div class="zubtaptime" id="zubTapTime">00:00</div><div class="zubtaphint">Тапай по зубу · +3 сек за тап</div>';
+  const stateSub=document.querySelector('#stateSub');
+  if(stateSub)stateSub.after(bar);else hero.appendChild(bar);
+  function fmt(s){const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),x=s%60;return h?String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(x).padStart(2,'0'):String(m).padStart(2,'0')+':'+String(x).padStart(2,'0')}
+  function paint(){const el=document.querySelector('#zubTapTime');if(el)el.textContent=fmt(seconds)}
+  function pop(ev,plus){const d=document.createElement('div');d.className='zubpop';d.textContent='+'+plus+' сек';const r=power.getBoundingClientRect();const x=ev&&ev.clientX?ev.clientX:r.left+r.width/2;const y=ev&&ev.clientY?ev.clientY:r.top+r.height/2;d.style.left=x+'px';d.style.top=y+'px';document.body.appendChild(d);setTimeout(()=>d.remove(),700)}
+  power.onclick=null;
+  power.addEventListener('click',ev=>{
+   ev.preventDefault();ev.stopPropagation();
+   const now=Date.now();if(now-last<65)return;last=now;
+   const plus=3;seconds=Math.min(seconds+plus,24*3600);taps++;localStorage.setItem('zub_free_seconds',String(seconds));paint();pop(ev,plus);
+   power.classList.add('zubtap');setTimeout(()=>power.classList.remove('zubtap'),90);
+   const state=document.querySelector('#state');if(state)state.textContent='ТАПАЙ ZUB';
+   if(stateSub)stateSub.textContent='Каждый тап добавляет бесплатное VPN-время';
+   try{const tg=window.Telegram&&Telegram.WebApp;tg&&tg.HapticFeedback&&tg.HapticFeedback.impactOccurred('light')}catch(e){}
+  },true);
+  let lastTouch=0;document.addEventListener('touchend',e=>{const now=Date.now();if(now-lastTouch<=300)e.preventDefault();lastTouch=now},{passive:false});
+  document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});
+  paint();
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(setupTapper,20));else setTimeout(setupTapper,20);
 })();
