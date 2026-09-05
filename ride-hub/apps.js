@@ -58,3 +58,26 @@ window.ZUB_APPS=[
 {name:'Atresplayer',keys:['atresplayer'],regions:[['ES','Spain']]},
 {name:'RTVE Play',keys:['rtve'],regions:[['ES','Spain']]}
 ];
+
+(()=>{
+ const API='https://zub-vpn-bot.onrender.com';
+ let selected='DE',cfg=null;
+ const css=document.createElement('style');
+ css.textContent='.zubpay{background:linear-gradient(135deg,#113127,#07100d);border:1px solid #2c6f5a;border-radius:22px;padding:15px;margin-top:11px}.zubpay h3{margin:0 0 4px;font-size:16px}.zubpay .p{color:#7b948b;font-size:10px;line-height:1.45}.zubpay .price{font-size:28px;font-weight:950;margin:12px 0 2px}.zubpay button{width:100%;border:0;border-radius:15px;padding:14px;background:#6fffd0;color:#02100b;font-weight:900;font-size:13px;margin-top:12px}.zubpay button:disabled{opacity:.45}.zubpay .countryline{display:flex;justify-content:space-between;margin-top:9px;font-size:10px;color:#a7c8bc}.zubpay .note{font-size:8px;color:#61776f;margin-top:8px;line-height:1.4}.zubpay .msg{font-size:10px;margin-top:9px;color:#6fffd0;display:none}';document.head.appendChild(css);
+ function flag(c){return c.replace(/./g,x=>String.fromCodePoint(127397+x.charCodeAt()))}
+ function mount(){
+  const demand=[...document.querySelectorAll('.card')].find(x=>x.textContent.includes('ZUB Demand Network'));
+  if(!demand||document.querySelector('.zubpay'))return;
+  const box=document.createElement('section');box.className='zubpay';box.innerHTML='<h3>🦷 ZUB Premium</h3><div class="p">30 дней доступа. Выбираешь страну — ZUB сам решает, использовать готовую ноду или подготовить новую.</div><div class="price" id="zubPrice">299 ₽</div><div class="countryline"><span>Выбранная страна</span><b id="zubPayCountry">🇩🇪 Германия</b></div><button id="zubPayBtn">ОПЛАТИТЬ И ПОДКЛЮЧИТЬ</button><div class="msg" id="zubPayMsg"></div><div class="note">Оплата идёт за подписку ZUB VPN. Внутренние расходы на серверы и инфраструктуру оплачивает ZUB самостоятельно.</div>';
+  demand.after(box);bind();
+ }
+ async function bind(){
+  const btn=document.querySelector('#zubPayBtn'),msg=document.querySelector('#zubPayMsg');
+  try{cfg=await fetch(API+'/api/config').then(r=>r.json());if(cfg.price)document.querySelector('#zubPrice').textContent=Math.round(Number(cfg.price))+' ₽';if(!cfg.paymentsConfigured){btn.disabled=true;btn.textContent='ОПЛАТА ЕЩЁ НЕ ПОДКЛЮЧЕНА'}}catch(e){btn.disabled=true;btn.textContent='СЕРВИС ОПЛАТЫ НЕДОСТУПЕН'}
+  btn.onclick=async()=>{btn.disabled=true;btn.textContent='СОЗДАЁМ ОПЛАТУ…';msg.style.display='none';try{const tg=window.Telegram&&Telegram.WebApp;const user=tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user;const r=await fetch(API+'/api/payment/create',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({country:selected,tgUser:user&&user.id})});const p=await r.json();if(!r.ok||!p.confirmationUrl)throw new Error(p.error||'payment_error');localStorage.setItem('zub_payment_id',p.id);if(tg&&tg.openLink)tg.openLink(p.confirmationUrl);else location.href=p.confirmationUrl;btn.textContent='ОТКРЫВАЕМ ОПЛАТУ…'}catch(e){msg.style.display='block';msg.textContent='Не удалось создать оплату';btn.disabled=false;btn.textContent='ОПЛАТИТЬ И ПОДКЛЮЧИТЬ'}};
+  checkPayment();
+ }
+ async function checkPayment(){const id=localStorage.getItem('zub_payment_id');if(!id)return;try{const r=await fetch(API+'/api/payment/status?id='+encodeURIComponent(id)).then(x=>x.json());if(r.status==='succeeded'){const msg=document.querySelector('#zubPayMsg');msg.style.display='block';msg.textContent=r.provisioning&&r.provisioning.state==='ready'?'✓ Оплачено. Эта страна уже готова к подключению.':'✓ Оплачено. ZUB готовит выбранную страну.';localStorage.removeItem('zub_payment_id')}}catch(e){}}
+ document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('[data-c]');if(!b)return;selected=b.dataset.c||selected;window.ZUB_SELECTED_COUNTRY=selected;const c=(window.MINT_COUNTRIES||[]).find(x=>x.c===selected);const el=document.querySelector('#zubPayCountry');if(el)el.textContent=flag(selected)+' '+(c?c.n:selected)});
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else setTimeout(mount,0);
+})();
