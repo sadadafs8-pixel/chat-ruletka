@@ -1233,3 +1233,108 @@ button{
 .collection-card .plate-country-flat{gap:2px;margin-top:1px}
 .collection-card .plate-country-flat span{font-size:5px}
 .collection-card .plate-flag{width:10px}
+
+
+/* ===== v6: corrected GOST-like proportions, no condensed display font ===== */
+.plate-face{
+  grid-template-columns:minmax(0,1fr) 22.5%;
+  border-color:#141617;
+  background:#eeeeed;
+  box-shadow:
+    0 0 0 2px rgba(145,149,152,.95),
+    0 8px 22px rgba(0,0,0,.42);
+}
+
+.plate-face::before{
+  inset:5px;
+  border-color:rgba(20,22,23,.22);
+}
+
+.plate-main-flat{
+  gap:clamp(3px,.75vw,7px);
+  padding:0 17px 0 18px;
+  border-right-color:#151718;
+}
+
+.plate-letter-flat,
+.plate-digits-flat,
+.plate-region-flat{
+  font-family:Arial,Helvetica,sans-serif !important;
+  font-stretch:normal !important;
+  font-weight:700 !important;
+  line-height:1 !important;
+  letter-spacing:-.045em !important;
+  transform:none !important;
+}
+
+.plate-letter-flat{
+  font-size:clamp(39px,10.6vw,66px) !important;
+}
+
+.plate-letter-flat.pair{
+  letter-spacing:-.065em !important;
+}
+
+.plate-digits-flat{
+  font-size:clamp(47px,12.7vw,78px) !important;
+  letter-spacing:-.055em !important;
+}
+
+.plate-side-flat{
+  padding:2px 5px 0;
+}
+
+.plate-region-flat{
+  font-size:clamp(29px,7.25vw,45px) !important;
+  letter-spacing:-.04em !important;
+}
+
+.plate-country-flat{
+  gap:4px;
+  margin-top:4px;
+}
+
+.plate-country-flat span{
+  font-family:Arial,Helvetica,sans-serif !important;
+  font-size:clamp(9px,2.35vw,14px);
+  font-weight:700;
+}
+
+.plate-flag{
+  width:clamp(19px,4.9vw,30px);
+}
+
+/* previous number inherits the same less-condensed character shapes */
+.previous-slot .plate-main-flat{
+  gap:1px;
+  padding:0 7px 0 8px;
+}
+
+.previous-slot .plate-letter-flat{
+  font-size:clamp(15px,3.8vw,24px) !important;
+}
+
+.previous-slot .plate-digits-flat{
+  font-size:clamp(18px,4.6vw,29px) !important;
+}
+
+.previous-slot .plate-region-flat{
+  font-size:clamp(12px,3vw,19px) !important;
+}
+
+.collection-card .plate-main-flat{
+  gap:1px;
+  padding:0 6px 0 7px;
+}
+
+.collection-card .plate-letter-flat{
+  font-size:clamp(14px,3.55vw,22px) !important;
+}
+
+.collection-card .plate-digits-flat{
+  font-size:clamp(17px,4.25vw,27px) !important;
+}
+
+.collection-card .plate-region-flat{
+  font-size:clamp(11px,2.75vw,17px) !important;
+}
