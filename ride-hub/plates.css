@@ -476,3 +476,78 @@ button,input{font:inherit} button{color:inherit}
   .roll-orb{bottom:calc(13.8% + var(--safe-bottom))!important}
   .region-chip{bottom:calc(2.8% + var(--safe-bottom))!important}
 }
+
+
+/* ===== v8.1 alignment lock ===== */
+.plate-shell{
+  width:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.plate-svg{
+  display:block;
+  width:100%;
+  height:auto;
+  aspect-ratio:520/112;
+  overflow:visible;
+  shape-rendering:geometricPrecision;
+  transform:none!important;
+}
+
+.plate-host{
+  width:94%!important;
+  max-width:520px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.previous-slot{
+  width:min(40vw,205px)!important;
+}
+
+.previous-plate,
+.previous-slot .plate-shell,
+.previous-slot .plate-svg{
+  width:100%!important;
+  height:auto!important;
+  max-width:none!important;
+}
+
+.previous-caption{
+  width:100%!important;
+  box-sizing:border-box;
+  margin-top:7px!important;
+}
+
+.collection-card>div:first-child{
+  min-width:0;
+  display:flex;
+  align-items:center;
+}
+
+.collection-card .plate-shell{
+  width:100%!important;
+}
+
+.collection-card .plate-svg{
+  width:100%!important;
+  max-width:300px!important;
+  height:auto!important;
+}
+
+.detail-plate .plate-shell{
+  width:100%!important;
+}
+
+.detail-plate .plate-svg{
+  width:100%!important;
+  height:auto!important;
+}
+
+@media(max-height:760px){
+  .plate-host{width:93%!important}
+  .previous-slot{width:min(37vw,188px)!important}
+}
