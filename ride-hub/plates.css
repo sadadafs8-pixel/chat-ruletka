@@ -1070,3 +1070,166 @@ button{
   body{background:#020305}
   .app{box-shadow:0 0 90px rgba(0,0,0,.68)}
 }
+
+/* ===== v5: flat realistic Russian plate, matched to the video reference ===== */
+.plate-shell{
+  width:min(100%,560px);
+  display:flex;
+  justify-content:center;
+}
+
+.plate-face{
+  position:relative;
+  width:min(96vw,560px);
+  aspect-ratio:520/112;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 23.5%;
+  overflow:hidden;
+  border:3px solid #17191b;
+  border-radius:4px;
+  color:#070809;
+  background:linear-gradient(180deg,#f3f3f2 0%,#e9e9e8 100%);
+  box-shadow:
+    0 0 0 2px rgba(150,154,157,.92),
+    0 8px 22px rgba(0,0,0,.42);
+}
+
+.plate-face::before{
+  content:"";
+  position:absolute;
+  inset:5px;
+  z-index:3;
+  pointer-events:none;
+  border:1.25px solid rgba(32,34,35,.26);
+  border-radius:2px;
+}
+
+.plate-face::after{
+  display:none !important;
+  content:none !important;
+}
+
+.plate-main-flat{
+  min-width:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:clamp(4px,1.05vw,9px);
+  padding:0 15px 0 16px;
+  border-right:3px solid #17191b;
+  white-space:nowrap;
+}
+
+.plate-letter-flat,
+.plate-digits-flat,
+.plate-region-flat{
+  color:#050505;
+  font-family:"DIN Condensed","DIN Alternate","Arial Narrow","Helvetica Neue",Arial,sans-serif;
+  font-weight:700;
+  font-stretch:condensed;
+  line-height:.88;
+  text-rendering:geometricPrecision;
+  -webkit-font-smoothing:antialiased;
+}
+
+.plate-letter-flat{
+  font-size:clamp(43px,11.8vw,72px);
+  letter-spacing:-.055em;
+}
+
+.plate-letter-flat.pair{
+  letter-spacing:-.075em;
+}
+
+.plate-digits-flat{
+  font-size:clamp(54px,14.8vw,89px);
+  letter-spacing:-.055em;
+}
+
+.plate-side-flat{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:2px 6px 0;
+}
+
+.plate-region-flat{
+  font-size:clamp(31px,8.2vw,50px);
+  letter-spacing:-.055em;
+}
+
+.plate-country-flat{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  margin-top:5px;
+}
+
+.plate-country-flat span{
+  color:#0b0c0d;
+  font-family:Arial,Helvetica,sans-serif;
+  font-size:clamp(10px,2.55vw,16px);
+  font-weight:700;
+  line-height:1;
+}
+
+.plate-flag{
+  display:block;
+  width:clamp(21px,5.35vw,33px);
+  aspect-ratio:3/2;
+  border:1px solid rgba(0,0,0,.28);
+  border-radius:1px;
+  background:linear-gradient(180deg,#fff 0 33.333%,#195eba 33.333% 66.666%,#cc3035 66.666%);
+}
+
+/* previous plate */
+.previous-slot .plate-shell{width:100%}
+.previous-slot .plate-face{
+  width:100%;
+  border-width:2px;
+  border-radius:3px;
+  box-shadow:0 0 0 1px rgba(150,154,157,.8),0 5px 14px rgba(0,0,0,.33);
+}
+.previous-slot .plate-face::before{
+  inset:3px;
+  border-width:1px;
+  border-radius:1px;
+}
+.previous-slot .plate-main-flat{
+  gap:2px;
+  padding:0 8px 0 9px;
+  border-right-width:2px;
+}
+.previous-slot .plate-letter-flat{font-size:clamp(17px,4.3vw,28px)}
+.previous-slot .plate-digits-flat{font-size:clamp(22px,5.35vw,35px)}
+.previous-slot .plate-region-flat{font-size:clamp(14px,3.45vw,22px)}
+.previous-slot .plate-side-flat{padding:1px 3px 0}
+.previous-slot .plate-country-flat{gap:2px;margin-top:1px}
+.previous-slot .plate-country-flat span{font-size:6px}
+.previous-slot .plate-flag{width:11px}
+
+/* collection cards */
+.collection-card .plate-shell{width:100%}
+.collection-card .plate-face{
+  width:100%;
+  max-width:300px;
+  border-width:2px;
+  border-radius:3px;
+  box-shadow:0 0 0 1px rgba(150,154,157,.82),0 4px 10px rgba(0,0,0,.28);
+}
+.collection-card .plate-face::before{inset:3px;border-radius:1px}
+.collection-card .plate-main-flat{
+  padding:0 7px 0 8px;
+  gap:2px;
+  border-right-width:2px;
+}
+.collection-card .plate-letter-flat{font-size:clamp(16px,4vw,24px)}
+.collection-card .plate-digits-flat{font-size:clamp(20px,5vw,30px)}
+.collection-card .plate-region-flat{font-size:clamp(13px,3.25vw,19px)}
+.collection-card .plate-side-flat{padding:0 3px}
+.collection-card .plate-country-flat{gap:2px;margin-top:1px}
+.collection-card .plate-country-flat span{font-size:5px}
+.collection-card .plate-flag{width:10px}
