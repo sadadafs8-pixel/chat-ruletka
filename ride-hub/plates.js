@@ -9,11 +9,11 @@ const ROLL_COST=1000;
 const START_BALANCE=1000000;
 
 const DISPLAY_TIERS=[
-  {name:'Обычный',color:'#8b94a2',min:2000,max:19999,desc:'Обычный номер без заметной красивой комбинации. Почти не имеет коллекционной наценки.'},
-  {name:'Необычный',color:'#35e982',min:20000,max:79999,desc:'Небольшой рисунок: повтор, зеркало, последовательность или аккуратное совпадение.'},
-  {name:'Редкий',color:'#318dff',min:80000,max:299999,desc:'Сильная комбинация цифр или букв, первые номера и ровные значения.'},
-  {name:'Эпический',color:'#a15aff',min:300000,max:1499999,desc:'Тройки, одинаковые буквы, сильные сочетания и дорогие региональные коды.'},
-  {name:'Легендарный',color:'#f0a51a',min:1500000,max:30000000,desc:'Топовые сочетания и редкие спецсерии.'}
+  {name:'Обычный',color:'#8b94a2',min:1500,max:14999,desc:'Обычный случайный номер почти без коллекционной ценности.'},
+  {name:'Необычный',color:'#35e982',min:15000,max:59999,desc:'Небольшой рисунок: зеркало, повтор или последовательность.'},
+  {name:'Редкий',color:'#318dff',min:60000,max:249999,desc:'Ровные десятки и сотни, сильные повторы и заметные сочетания.'},
+  {name:'Эпический',color:'#a15aff',min:250000,max:699999,desc:'Низкие номера, тройные цифры и одинаковые буквы.'},
+  {name:'Легендарный',color:'#f0a51a',min:700000,max:30000000,desc:'001, 007, 777, топовые сочетания и спецсерии.'}
 ];
 
 const storageKey='nomer-v7-'+(tg?.initDataUnsafe?.user?.id||'local');
@@ -131,15 +131,15 @@ function parseTransferCode(code){
 function regionPriceMultiplier(code,base){
   const r=String(code);
 
-  // Region should matter mainly for already valuable combinations.
-  if(base<50000)return 1;
+  // Region matters only when the combination is already valuable.
+  if(base<60000)return 1;
 
-  if(r==='77')return base>=300000?2.0:1.25;
-  if(['97','99','177','197','199'].includes(r))return base>=300000?1.55:1.18;
-  if(r==='777')return base>=300000?1.45:1.15;
-  if(['797','799','977','997'].includes(r))return base>=300000?1.35:1.12;
-  if(['50','90','150','190','250','550','750','790'].includes(r))return base>=300000?1.22:1.08;
-  if(['78','98','178','198'].includes(r))return base>=300000?1.25:1.10;
+  if(r==='77')return base>=700000?1.55:1.22;
+  if(['97','99','177','197','199'].includes(r))return base>=700000?1.35:1.15;
+  if(r==='777')return base>=700000?1.28:1.12;
+  if(['797','799','977','997'].includes(r))return base>=700000?1.22:1.10;
+  if(['50','90','150','190','250','550','750','790'].includes(r))return base>=700000?1.16:1.07;
+  if(['78','98','178','198'].includes(r))return base>=700000?1.18:1.08;
 
   return 1;
 }
@@ -155,57 +155,72 @@ function marketPriceFor(p){
   const sameLetters=letters[0]===letters[1]&&letters[1]===letters[2];
   const twoSameLetters=new Set(letters).size===2;
   const repeatedDigits=new Set(n).size<3;
-  const mirror=n[0]===n[2];
+  const mirror=n[0]===n[2]&&!sameDigits;
   const sequence=['123','234','345','456','567','678','789','987','876','765','654','543','432','321'].includes(n);
   const roundHundred=numeric>0&&numeric%100===0;
+  const roundTen=numeric>=10&&numeric<100&&numeric%10===0;
   const firstTen=numeric>=1&&numeric<=9;
   const regionDigits=String(Number(region));
   const matchesRegion=regionDigits&&(n===regionDigits.padStart(3,'0')||n.endsWith(regionDigits));
 
-  // Most random plates are basically worthless in a collector market.
-  let price=3500+((h%7)*500);
+  // Most random combinations should be almost worthless.
+  let price=1800+((h%7)*350);
 
-  if(repeatedDigits)price=9000+((h%7)*1000);
-  if(mirror)price=30000+((h%7)*4000);
-  if(sequence)price=45000+((h%7)*5000);
-  if(roundHundred)price=60000+((h%7)*7000);
+  if(repeatedDigits)price=4500+((h%6)*650);
+  if(mirror)price=12000+((h%7)*1800);
+  if(sequence)price=24000+((h%7)*2800);
 
+  // Clean rounded numbers are noticeably more desirable.
+  if(roundHundred)price=85000+((h%7)*9000);
+  if(roundTen)price=120000+((h%7)*12000);
+
+  // Low numbers are the main premium category.
   if(firstTen){
-    price=120000+((h%7)*18000);
+    const lowPrices={
+      '001':760000,
+      '002':360000,
+      '003':340000,
+      '004':330000,
+      '005':390000,
+      '006':330000,
+      '007':720000,
+      '008':430000,
+      '009':410000
+    };
+    price=lowPrices[n]||350000;
   }
 
-  if(n==='001'){
-    price=320000+((h%7)*35000);
-  }
-
+  // Triple digits use market-like relative ranking.
   if(sameDigits){
     const triplePrices={
-      '111':170000,
-      '222':150000,
-      '333':160000,
-      '444':140000,
-      '555':180000,
-      '666':130000,
-      '777':420000,
-      '888':220000,
-      '999':240000,
-      '000':300000
+      '111':390000,
+      '222':320000,
+      '333':340000,
+      '444':300000,
+      '555':380000,
+      '666':280000,
+      '777':700000,
+      '888':480000,
+      '999':450000,
+      '000':520000
     };
-    price=triplePrices[n]||170000;
+    price=triplePrices[n]||350000;
   }
 
-  // Two matching letters alone should barely matter.
+  // Two matching letters should barely affect a bad number.
   if(twoSameLetters&&!sameLetters){
-    price+=6000;
+    price+=3000;
   }
 
+  // Three identical letters are genuinely valuable.
   if(sameLetters){
-    price=Math.max(price,180000);
+    price=Math.max(price,500000);
   }
 
+  // Matching region matters, but should not turn junk into an expensive plate.
   if(matchesRegion){
-    price=Math.max(price,25000);
-    if(price>=80000)price*=1.08;
+    if(price<60000)price+=6000;
+    else price*=1.10;
   }
 
   const specialSeries={
@@ -222,25 +237,28 @@ function marketPriceFor(p){
 
   price*=regionPriceMultiplier(region,price);
 
-  if(n==='777'&&region==='77')price*=1.35;
-  if(n==='001'&&region==='77')price*=1.20;
+  if(n==='777'&&region==='77')price*=1.30;
+  if(n==='001'&&region==='77')price*=1.22;
+  if(n==='007'&&region==='77')price*=1.18;
 
-  const variance=.94+((h%1000)/999)*.12;
+  const variance=.96+((h%1000)/999)*.08;
   price*=variance;
 
-  if(price<20000){
+  if(price<15000){
     price=Math.round(price/500)*500;
-  }else if(price<100000){
+  }else if(price<60000){
     price=Math.round(price/1000)*1000;
-  }else if(price<1000000){
+  }else if(price<250000){
     price=Math.round(price/5000)*5000;
-  }else if(price<5000000){
+  }else if(price<1000000){
     price=Math.round(price/10000)*10000;
+  }else if(price<5000000){
+    price=Math.round(price/25000)*25000;
   }else{
     price=Math.round(price/50000)*50000;
   }
 
-  return Math.max(2000,Math.min(30000000,price));
+  return Math.max(1500,Math.min(30000000,price));
 }
 
 function priceFor(p){
@@ -249,10 +267,10 @@ function priceFor(p){
 
 function displayTier(p){
   const value=priceFor(p);
-  if(value<20000)return 0;
-  if(value<80000)return 1;
-  if(value<300000)return 2;
-  if(value<1500000)return 3;
+  if(value<15000)return 0;
+  if(value<60000)return 1;
+  if(value<250000)return 2;
+  if(value<700000)return 3;
   return 4;
 }
 
