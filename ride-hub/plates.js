@@ -178,7 +178,8 @@ function featuresFor(p){
 function plate(p){
   const region=String(p.r);
   const rid=(p.id||key(p)).replace(/[^a-zA-Z0-9]/g,'').slice(-10);
-  const combo=`${p.a}${p.n}${p.b}${p.c}`;
+  const chars=[p.a,p.n[0],p.n[1],p.n[2],p.b,p.c];
+  const xs=[52,108,164,220,278,330];
 
   return `
     <div class="plate-shell" aria-label="${key(p)}">
@@ -192,21 +193,21 @@ function plate(p){
       >
         <defs>
           <linearGradient id="plateBg-${rid}" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#fcfcfa"/>
-            <stop offset="48%" stop-color="#f7f7f3"/>
-            <stop offset="100%" stop-color="#ecece7"/>
+            <stop offset="0%" stop-color="#fdfdfb"/>
+            <stop offset="52%" stop-color="#f7f7f3"/>
+            <stop offset="100%" stop-color="#ecece8"/>
           </linearGradient>
           <linearGradient id="plateEdge-${rid}" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#a3a6a8"/>
-            <stop offset="100%" stop-color="#6c7174"/>
+            <stop offset="0%" stop-color="#9fa3a5"/>
+            <stop offset="100%" stop-color="#6e7376"/>
           </linearGradient>
           <radialGradient id="screw-${rid}" cx="34%" cy="30%" r="72%">
             <stop offset="0%" stop-color="#f3f4f4"/>
             <stop offset="46%" stop-color="#abb0b3"/>
             <stop offset="100%" stop-color="#555a5e"/>
           </radialGradient>
-          <filter id="emboss-${rid}" x="-4%" y="-8%" width="108%" height="120%">
-            <feDropShadow dx="0" dy=".75" stdDeviation=".25" flood-color="#000" flood-opacity=".24"/>
+          <filter id="emboss-${rid}" x="-5%" y="-8%" width="110%" height="120%">
+            <feDropShadow dx="0" dy=".65" stdDeviation=".23" flood-color="#000" flood-opacity=".23"/>
           </filter>
         </defs>
 
@@ -215,40 +216,49 @@ function plate(p){
               stroke="url(#plateEdge-${rid})"
               stroke-width="2"/>
 
-        <rect x="7.5" y="7.5" width="505" height="97" rx="2"
-              fill="none" stroke="#111314" stroke-width="2.6"/>
+        <rect x="8" y="8" width="504" height="96" rx="1.8"
+              fill="none" stroke="#101214" stroke-width="2.5"/>
 
-        <line x1="366" y1="7.5" x2="366" y2="104.5"
-              stroke="#111314" stroke-width="2.6"/>
+        <line x1="366" y1="8" x2="366" y2="104"
+              stroke="#101214" stroke-width="2.5"/>
 
         <circle cx="18" cy="56" r="3.1"
-                fill="url(#screw-${rid})" stroke="#575c60" stroke-width=".75"/>
+                fill="url(#screw-${rid})" stroke="#555b5f" stroke-width=".75"/>
         <circle cx="502" cy="56" r="3.1"
-                fill="url(#screw-${rid})" stroke="#575c60" stroke-width=".75"/>
+                fill="url(#screw-${rid})" stroke="#555b5f" stroke-width=".75"/>
+
+        <g filter="url(#emboss-${rid})">
+          ${chars.map((ch,i)=>`
+            <text
+              x="${xs[i]}" y="58"
+              text-anchor="middle"
+              dominant-baseline="middle"
+              class="gost-char"
+            >${ch}</text>
+          `).join('')}
+        </g>
 
         <text
-          x="31" y="86"
-          class="gost-combination"
-          textLength="318"
-          lengthAdjust="spacing"
-          filter="url(#emboss-${rid})"
-        >${combo}</text>
-
-        <text
-          x="442" y="61"
+          x="431" y="48"
           text-anchor="middle"
+          dominant-baseline="middle"
           class="gost-region"
-          textLength="${region.length===3?82:55}"
+          textLength="${region.length===3?91:61}"
           lengthAdjust="spacingAndGlyphs"
         >${region}</text>
 
-        <text x="412" y="91" text-anchor="middle" class="gost-rus">RUS</text>
+        <text
+          x="408" y="87"
+          text-anchor="middle"
+          dominant-baseline="middle"
+          class="gost-rus"
+        >RUS</text>
 
         <g aria-label="Флаг России">
-          <rect x="441" y="73" width="49" height="21" rx=".4"
-                fill="#fff" stroke="#74797c" stroke-width=".75"/>
-          <rect x="441" y="80" width="49" height="7" fill="#235fbd"/>
-          <rect x="441" y="87" width="49" height="7" fill="#cf3035"/>
+          <rect x="441" y="74" width="46" height="20" rx=".4"
+                fill="#fff" stroke="#72777a" stroke-width=".75"/>
+          <rect x="441" y="80.67" width="46" height="6.66" fill="#235fbd"/>
+          <rect x="441" y="87.33" width="46" height="6.67" fill="#cf3035"/>
         </g>
       </svg>
     </div>
