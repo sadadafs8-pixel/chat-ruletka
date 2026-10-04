@@ -890,3 +890,84 @@ button,input{font:inherit} button{color:inherit}
 .plate-svg .gost-rus{
   font-size:16px!important;
 }
+
+
+/* ===== v8.8 realistic plate optics ===== */
+.plate-svg{
+  shape-rendering:geometricPrecision;
+}
+
+.plate-svg text{
+  font-family:"GOSTPlate","Arial Narrow",Arial,sans-serif!important;
+  fill:#0b0c0d!important;
+  text-rendering:geometricPrecision;
+  -webkit-font-smoothing:antialiased;
+}
+
+.plate-svg .gost-main{
+  font-size:66px!important;
+  font-weight:400!important;
+  letter-spacing:0!important;
+}
+
+.plate-svg .gost-letter{
+  font-size:64px!important;
+}
+
+.plate-svg .gost-digits{
+  font-size:66px!important;
+  letter-spacing:.15px!important;
+}
+
+.plate-svg .gost-pair{
+  font-size:64px!important;
+  letter-spacing:.15px!important;
+}
+
+.plate-svg .gost-region{
+  font-size:47px!important;
+  font-weight:400!important;
+  letter-spacing:0!important;
+}
+
+.plate-svg .gost-rus{
+  font-size:15px!important;
+  font-weight:400!important;
+  letter-spacing:0!important;
+}
+
+.plate-shell{
+  width:100%!important;
+  display:flex!important;
+  justify-content:center!important;
+  align-items:center!important;
+}
+
+.plate-host{
+  width:91%!important;
+  max-width:510px!important;
+}
+
+.previous-slot{
+  width:min(58vw,292px)!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+}
+
+.previous-plate{
+  width:min(39vw,198px)!important;
+  flex:0 0 auto!important;
+}
+
+.previous-slot .plate-svg,
+.collection-card .plate-svg,
+.detail-plate .plate-svg{
+  width:100%!important;
+  height:auto!important;
+}
+
+@media(max-height:760px){
+  .plate-host{width:90%!important}
+  .previous-plate{width:min(36vw,182px)!important}
+}
