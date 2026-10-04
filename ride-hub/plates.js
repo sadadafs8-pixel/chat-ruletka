@@ -13,8 +13,9 @@ const DISPLAY_TIERS=[
   {name:'Легендарный',color:'#f0a51a',min:10000000,max:29990000,desc:'Максимально выразительное сочетание.'}
 ];
 
-const storageKey='nomer-v4-'+(tg?.initDataUnsafe?.user?.id||'local');
+const storageKey='nomer-v5-'+(tg?.initDataUnsafe?.user?.id||'local');
 const previousKeys=[
+  'nomer-v4-'+(tg?.initDataUnsafe?.user?.id||'local'),
   'nomer-v2-'+(tg?.initDataUnsafe?.user?.id||'local'),
   'nomer-v1-'+(tg?.initDataUnsafe?.user?.id||'local')
 ];
@@ -128,20 +129,16 @@ function plate(p){
   return `
     <div class="plate-shell" aria-label="${key(p)}">
       <div class="plate-face">
-        <span class="plate-bolt plate-bolt-left"></span>
-        <span class="plate-bolt plate-bolt-right"></span>
-
-        <div class="plate-main-real">
-          <span class="plate-letter-real">${p.a}</span>
-          <span class="plate-digits-real">${p.n}</span>
-          <span class="plate-letter-real pair">${p.b}${p.c}</span>
+        <div class="plate-main-flat">
+          <span class="plate-letter-flat">${p.a}</span>
+          <span class="plate-digits-flat">${p.n}</span>
+          <span class="plate-letter-flat pair">${p.b}${p.c}</span>
         </div>
-
-        <div class="plate-side-real">
-          <div class="plate-region-code">${p.r}</div>
-          <div class="plate-country-row">
-            <span class="plate-country-text">RUS</span>
-            <span class="plate-flag"></span>
+        <div class="plate-side-flat">
+          <div class="plate-region-flat">${p.r}</div>
+          <div class="plate-country-flat">
+            <span>RUS</span>
+            <i class="plate-flag"></i>
           </div>
         </div>
       </div>
