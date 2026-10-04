@@ -13,8 +13,10 @@ const DISPLAY_TIERS=[
   {name:'Легендарный',color:'#f0a51a',min:10000000,max:29990000,desc:'Максимально выразительное сочетание.'}
 ];
 
-const storageKey='nomer-v5-'+(tg?.initDataUnsafe?.user?.id||'local');
+const storageKey='nomer-v7-'+(tg?.initDataUnsafe?.user?.id||'local');
 const previousKeys=[
+  'nomer-v6-'+(tg?.initDataUnsafe?.user?.id||'local'),
+  'nomer-v5-'+(tg?.initDataUnsafe?.user?.id||'local'),
   'nomer-v4-'+(tg?.initDataUnsafe?.user?.id||'local'),
   'nomer-v2-'+(tg?.initDataUnsafe?.user?.id||'local'),
   'nomer-v1-'+(tg?.initDataUnsafe?.user?.id||'local')
@@ -175,7 +177,7 @@ function renderCurrent(){
   const p=state.current;
 
   if(!p){
-    const demo={a:'М',n:'222',b:'М',c:'М',r:'22'};
+    const demo={a:'А',n:'024',b:'В',c:'М',r:'252'};
     $('#currentPlate').innerHTML=plate(demo);
     $('#featureList').innerHTML='<span>Нажми кнопку, чтобы выбить первый номер</span>';
     setTierVisual(0);
