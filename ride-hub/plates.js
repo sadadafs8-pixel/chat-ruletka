@@ -175,7 +175,19 @@ function featuresFor(p){
 
 function plate(p){
   const region=String(p.r);
-  const regionTextLength=region.length===3?78:54;
+  const rid=(p.id||key(p)).replace(/[^a-zA-Z0-9]/g,'').slice(-10);
+
+  const glyph=(x,text,size,weight=700)=>`
+    <text
+      x="${x}" y="59"
+      text-anchor="middle"
+      dominant-baseline="middle"
+      font-family="Arial, Helvetica, sans-serif"
+      font-size="${size}"
+      font-weight="${weight}"
+      fill="#080909"
+    >${text}</text>
+  `;
 
   return `
     <div class="plate-shell" aria-label="${key(p)}">
@@ -188,75 +200,53 @@ function plate(p){
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          <linearGradient id="plateBg" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#fafaf8"/>
-            <stop offset="52%" stop-color="#f1f1ef"/>
+          <linearGradient id="plateBg-${rid}" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#fbfbfa"/>
+            <stop offset="50%" stop-color="#f1f1ef"/>
             <stop offset="100%" stop-color="#e6e7e5"/>
           </linearGradient>
-          <radialGradient id="plateScrew" cx="35%" cy="30%" r="70%">
+          <radialGradient id="plateScrew-${rid}" cx="35%" cy="30%" r="70%">
             <stop offset="0%" stop-color="#f1f3f4"/>
             <stop offset="45%" stop-color="#aab0b4"/>
             <stop offset="100%" stop-color="#555b60"/>
           </radialGradient>
         </defs>
 
-        <rect x="2" y="2" width="516" height="108" rx="7" fill="#252a2e"/>
-        <rect x="5" y="5" width="510" height="102" rx="5" fill="url(#plateBg)" stroke="#a5aaad" stroke-width="2"/>
-        <rect x="10" y="10" width="500" height="92" rx="3" fill="none" stroke="#b9bdbf" stroke-width="1.2"/>
+        <rect x="2" y="2" width="516" height="108" rx="7" fill="#24292d"/>
+        <rect x="5" y="5" width="510" height="102" rx="5"
+              fill="url(#plateBg-${rid})" stroke="#a5aaad" stroke-width="2"/>
+        <rect x="10" y="10" width="500" height="92" rx="3"
+              fill="none" stroke="#b9bdbf" stroke-width="1.2"/>
 
-        <line x1="392" y1="5" x2="392" y2="107" stroke="#151819" stroke-width="3"/>
+        <line x1="392" y1="5" x2="392" y2="107"
+              stroke="#111416" stroke-width="3"/>
 
-        <circle cx="18" cy="56" r="4.6" fill="url(#plateScrew)" stroke="#505559" stroke-width="1"/>
-        <circle cx="502" cy="56" r="4.6" fill="url(#plateScrew)" stroke="#505559" stroke-width="1"/>
+        <circle cx="18" cy="56" r="4.6"
+                fill="url(#plateScrew-${rid})" stroke="#505559" stroke-width="1"/>
+        <circle cx="502" cy="56" r="4.6"
+                fill="url(#plateScrew-${rid})" stroke="#505559" stroke-width="1"/>
 
-        <text
-          x="56" y="58"
-          text-anchor="middle"
-          dominant-baseline="middle"
-          font-family="Arial, Helvetica, sans-serif"
-          font-size="66"
-          font-weight="700"
-          fill="#080909"
-        >${p.a}</text>
-
-        <text
-          x="202" y="58"
-          text-anchor="middle"
-          dominant-baseline="middle"
-          font-family="Arial, Helvetica, sans-serif"
-          font-size="76"
-          font-weight="700"
-          fill="#080909"
-          textLength="164"
-          lengthAdjust="spacingAndGlyphs"
-        >${p.n}</text>
-
-        <text
-          x="323" y="58"
-          text-anchor="middle"
-          dominant-baseline="middle"
-          font-family="Arial, Helvetica, sans-serif"
-          font-size="64"
-          font-weight="700"
-          fill="#080909"
-          textLength="100"
-          lengthAdjust="spacingAndGlyphs"
-        >${p.b}${p.c}</text>
+        ${glyph(52,p.a,64)}
+        ${glyph(118,p.n[0],74)}
+        ${glyph(174,p.n[1],74)}
+        ${glyph(230,p.n[2],74)}
+        ${glyph(302,p.b,64)}
+        ${glyph(350,p.c,64)}
 
         <text
           x="456" y="39"
           text-anchor="middle"
           dominant-baseline="middle"
           font-family="Arial, Helvetica, sans-serif"
-          font-size="47"
+          font-size="46"
           font-weight="700"
           fill="#080909"
-          textLength="${regionTextLength}"
+          textLength="${region.length===3?76:52}"
           lengthAdjust="spacingAndGlyphs"
         >${region}</text>
 
         <text
-          x="426" y="81"
+          x="426" y="82"
           text-anchor="middle"
           dominant-baseline="middle"
           font-family="Arial, Helvetica, sans-serif"
@@ -265,9 +255,12 @@ function plate(p){
           fill="#0b0c0d"
         >RUS</text>
 
-        <rect x="452" y="69" width="38" height="24" rx="1" fill="#fff" stroke="#8d9295" stroke-width="1"/>
-        <rect x="452" y="77" width="38" height="8" fill="#1c61bb"/>
-        <rect x="452" y="85" width="38" height="8" fill="#ce3035"/>
+        <g aria-label="Флаг России">
+          <rect x="452" y="69" width="38" height="24" rx="1"
+                fill="#fff" stroke="#8d9295" stroke-width="1"/>
+          <rect x="452" y="77" width="38" height="8" fill="#1c61bb"/>
+          <rect x="452" y="85" width="38" height="8" fill="#ce3035"/>
+        </g>
       </svg>
     </div>
   `;
