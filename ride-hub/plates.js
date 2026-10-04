@@ -276,18 +276,144 @@ function setTierVisual(index){
 }
 
 function updatePrevious(p){
+  const slot=$('#previousSlot');
+
   if(!p){
-    $('#previousSlot').classList.add('hidden');
+    slot.classList.add('hidden');
+    $('#previousPlate').innerHTML='';
     return;
   }
 
-  $('#previousSlot').classList.remove('hidden');
-  $('#previousPlate').innerHTML=plate(p);
+  slot.classList.remove('hidden');
+  $('#previousPlate').innerHTML=`
+    <div class="plate-stack">
+      <span class="stack-sheet stack-sheet-3"></span>
+      <span class="stack-sheet stack-sheet-2"></span>
+      <span class="stack-sheet stack-sheet-1"></span>
+      <div class="stack-top">${plate(p)}</div>
+    </div>
+  `;
 
   const t=displayTier(p);
   $('#previousTier').textContent=DISPLAY_TIERS[t].name;
   $('#previousTier').style.color=DISPLAY_TIERS[t].color;
   $('#previousPrice').textContent=fmtPrice(priceFor(p));
+}
+
+function updateSellButton(){
+  const btn=$('#sellCurrentBtn');
+  if(!btn)return;
+
+  if(!state.current){
+    btn.classList.add('hidden');
+    btn.disabled=true;
+    $('#sellCurrentPrice').textContent='0 ₽';
+    return;
+  }
+
+  btn.classList.remove('hidden');
+  btn.disabled=false;
+  $('#sellCurrentPrice').textContent=fmtPrice(priceFor(state.current));
+}
+
+async function animateToStack(p,reduced=false){
+  if(!p)return;
+
+  const source=$('#currentPlate .plate-shell');
+  if(!source){
+    updatePrevious(p);
+    return;
+  }
+
+  const sourceRect=source.getBoundingClientRect();
+
+  updatePrevious(p);
+  const target=$('#previousPlate .stack-top');
+  if(!target)return;
+
+  const targetRect=target.getBoundingClientRect();
+  const slot=$('#previousSlot');
+  slot.classList.add('stack-receiving');
+
+  const flyer=document.createElement('div');
+  flyer.className='stack-flyer';
+  flyer.innerHTML=plate(p);
+  flyer.style.left=sourceRect.left+'px';
+  flyer.style.top=sourceRect.top+'px';
+  flyer.style.width=sourceRect.width+'px';
+  flyer.style.height=sourceRect.height+'px';
+  document.body.appendChild(flyer);
+
+  const dx=targetRect.left-sourceRect.left;
+  const dy=targetRect.top-sourceRect.top;
+  const scale=targetRect.width/sourceRect.width;
+  const duration=reduced?120:520;
+
+  try{
+    const anim=flyer.animate([
+      {
+        transform:'translate3d(0,0,0) scale(1) rotate(0deg)',
+        opacity:1,
+        filter:'blur(0px)'
+      },
+      {
+        offset:.68,
+        transform:`translate3d(${dx*.72}px,${dy*.72}px,0) scale(${.72+(scale-.72)*.35}) rotate(-2.2deg)`,
+        opacity:.95,
+        filter:'blur(0px)'
+      },
+      {
+        transform:`translate3d(${dx}px,${dy}px,0) scale(${scale}) rotate(.7deg)`,
+        opacity:.35,
+        filter:'blur(.4px)'
+      }
+    ],{
+      duration,
+      easing:'cubic-bezier(.2,.82,.2,1)',
+      fill:'forwards'
+    });
+    await anim.finished;
+  }catch{}
+
+  flyer.remove();
+  slot.classList.remove('stack-receiving');
+  slot.classList.remove('stack-land');
+  void slot.offsetWidth;
+  slot.classList.add('stack-land');
+  setTimeout(()=>slot.classList.remove('stack-land'),380);
+}
+
+async function sellCurrent(){
+  if(busy||!state.current)return;
+
+  const p=state.current;
+  const value=priceFor(p);
+  busy=true;
+
+  const host=$('#currentPlate');
+  host.classList.add('selling-out');
+  haptic('success');
+
+  await sleep(state.reduced?80:260);
+
+  const ownedIndex=state.collection.findIndex(x=>x.id===p.id);
+  if(ownedIndex>=0)state.collection.splice(ownedIndex,1);
+
+  state.balance+=value;
+  state.current=null;
+  persist();
+
+  host.classList.remove('selling-out');
+  host.innerHTML='<div class="sold-empty"><b>НОМЕР ПРОДАН</b><span>Выбей следующий</span></div>';
+  $('#featureList').innerHTML='';
+  $('#priceValue').textContent='0 ₽';
+  setTierVisual(0);
+
+  renderStats();
+  updateSellButton();
+  updateSave();
+  showToast('Продано за '+fmtPrice(value));
+  busy=false;
 }
 
 function renderCurrent(){
@@ -296,10 +422,10 @@ function renderCurrent(){
   if(!p){
     const demo={a:'А',n:'024',b:'В',c:'М',r:'252'};
     $('#currentPlate').innerHTML=plate(demo);
-    updatePrevious(demo);
     $('#featureList').innerHTML='<span>Нажми кнопку, чтобы выбить первый номер</span>';
     setTierVisual(0);
     $('#priceValue').textContent='0 ₽';
+    updateSellButton();
     updateSave();
     return;
   }
@@ -312,7 +438,8 @@ function renderCurrent(){
   $('#featureList').innerHTML=featuresFor(p).map(x=>'<span>'+x+'</span>').join('');
   $('#app').classList.add('revealed');
 
-  updatePrevious(p);
+  updatePrevious(state.previous);
+  updateSellButton();
   updateSave();
 }
 
@@ -365,44 +492,47 @@ async function roll(){
     return;
   }
 
-  state.balance-=ROLL_COST;
-  persist();
-  renderStats();
+  const old=state.current;
+  const reduced=state.reduced||matchMedia('(prefers-reduced-motion: reduce)').matches;
+
   busy=true;
   closeDrawer();
   closePanel();
+
+  if(old){
+    await animateToStack(old,reduced);
+    state.previous=old;
+  }
+
+  state.balance-=ROLL_COST;
+  persist();
+  renderStats();
 
   $('#app').classList.remove('revealed','final-pop');
   $('#app').classList.add('rolling');
   $('#featureList').innerHTML='';
   $('#priceValue').textContent='0 ₽';
   setTierVisual(0);
+  updateSellButton();
 
-  const old=state.current;
   const final=generate(state.region);
-  const reduced=state.reduced||matchMedia('(prefers-reduced-motion: reduce)').matches;
   const steps=reduced?3:20;
 
   for(let i=0;i<steps;i++){
     const temp=generate(state.region);
     $('#currentPlate').innerHTML=plate(temp);
 
-    if(i%2===0){
-      updatePrevious(temp);
-      haptic();
-    }
+    if(i%3===0)haptic();
 
     await sleep(reduced?18:44+Math.min(52,i*2));
   }
 
-  state.previous=old;
   state.current=final;
   state.rolls++;
   state.history=[final,...state.history].slice(0,20);
   persist();
 
   $('#currentPlate').innerHTML=plate(final);
-  updatePrevious(final);
 
   $('#app').classList.remove('rolling');
   $('#app').classList.add('final-pop');
@@ -415,6 +545,7 @@ async function roll(){
   await analyze(final,reduced);
 
   renderStats();
+  updateSellButton();
   haptic('success');
   busy=false;
 }
@@ -733,6 +864,7 @@ function renderRegion(){
 }
 
 $('#rollBtn').onclick=roll;
+$('#sellCurrentBtn').onclick=sellCurrent;
 $('#saveBtn').onclick=saveCurrent;
 $('#menuBtn').onclick=openDrawer;
 $('#drawerClose').onclick=closeDrawer;
@@ -772,7 +904,8 @@ document.addEventListener('keydown',e=>{
 load();
 renderStats();
 renderCurrent();
-updatePrevious(state.current);
+updatePrevious(state.previous);
+updateSellButton();
 
 try{
   tg?.ready();
