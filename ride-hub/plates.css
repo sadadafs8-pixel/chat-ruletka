@@ -971,3 +971,76 @@ button,input{font:inherit} button{color:inherit}
   .plate-host{width:90%!important}
   .previous-plate{width:min(36vw,182px)!important}
 }
+
+
+/* ===== v8.9 reference-matched plate proportions ===== */
+.plate-svg{
+  shape-rendering:geometricPrecision!important;
+}
+
+.plate-svg text{
+  font-family:"GOSTPlate","Arial Narrow",Arial,sans-serif!important;
+  fill:#080909!important;
+  text-rendering:geometricPrecision!important;
+  -webkit-font-smoothing:antialiased!important;
+}
+
+.plate-svg .gost-main{
+  font-size:64px!important;
+  font-weight:400!important;
+  letter-spacing:0!important;
+}
+
+.plate-svg .gost-letter{
+  font-size:62px!important;
+}
+
+.plate-svg .gost-digits{
+  font-size:65px!important;
+  letter-spacing:.05px!important;
+}
+
+.plate-svg .gost-pair{
+  font-size:62px!important;
+  letter-spacing:.05px!important;
+}
+
+.plate-svg .gost-region{
+  font-size:53px!important;
+  font-weight:400!important;
+  letter-spacing:0!important;
+}
+
+.plate-svg .gost-rus{
+  font-size:18px!important;
+  font-weight:400!important;
+  letter-spacing:.35px!important;
+}
+
+.plate-host{
+  width:91%!important;
+  max-width:510px!important;
+}
+
+.previous-slot{
+  width:min(58vw,292px)!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+}
+
+.previous-plate{
+  width:min(40vw,204px)!important;
+}
+
+.previous-slot .plate-svg,
+.collection-card .plate-svg,
+.detail-plate .plate-svg{
+  width:100%!important;
+  height:auto!important;
+}
+
+@media(max-height:760px){
+  .plate-host{width:90%!important}
+  .previous-plate{width:min(37vw,187px)!important}
+}
