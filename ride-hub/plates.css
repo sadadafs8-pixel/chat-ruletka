@@ -1044,3 +1044,66 @@ button,input{font:inherit} button{color:inherit}
   .plate-host{width:90%!important}
   .previous-plate{width:min(37vw,187px)!important}
 }
+
+
+/* ===== v9.0 dense real-reference plate ===== */
+.plate-svg{
+  shape-rendering:geometricPrecision!important;
+}
+
+.plate-svg text{
+  font-family:"GOSTPlate","Arial Narrow",Arial,sans-serif!important;
+  fill:#090a0a!important;
+  text-rendering:geometricPrecision!important;
+  -webkit-font-smoothing:antialiased!important;
+}
+
+.plate-svg .gost-combination{
+  font-size:74px!important;
+  font-weight:400!important;
+  letter-spacing:0!important;
+  paint-order:stroke fill!important;
+  stroke:#090a0a!important;
+  stroke-width:1.05px!important;
+  stroke-linejoin:round!important;
+}
+
+.plate-svg .gost-region{
+  font-size:56px!important;
+  font-weight:400!important;
+  letter-spacing:0!important;
+  paint-order:stroke fill!important;
+  stroke:#090a0a!important;
+  stroke-width:.85px!important;
+  stroke-linejoin:round!important;
+}
+
+.plate-svg .gost-rus{
+  font-family:Arial,Helvetica,sans-serif!important;
+  font-size:18px!important;
+  font-weight:700!important;
+  letter-spacing:.2px!important;
+  paint-order:normal!important;
+  stroke:none!important;
+}
+
+.plate-host{
+  width:91%!important;
+  max-width:510px!important;
+}
+
+.previous-plate{
+  width:min(40vw,204px)!important;
+}
+
+.previous-slot .plate-svg,
+.collection-card .plate-svg,
+.detail-plate .plate-svg{
+  width:100%!important;
+  height:auto!important;
+}
+
+@media(max-height:760px){
+  .plate-host{width:90%!important}
+  .previous-plate{width:min(37vw,188px)!important}
+}
