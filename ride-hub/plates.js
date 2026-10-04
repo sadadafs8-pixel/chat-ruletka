@@ -74,7 +74,9 @@ function persist(){
 }
 
 function fmtPrice(n){
-  return Math.round(n).toLocaleString('ru-RU')+' ₽';
+  return Math.round(n)
+    .toLocaleString('ru-RU')
+    .replace(/[\s\u00A0\u202F]+/g,'\u00A0')+'\u00A0₽';
 }
 
 function regionName(code){
