@@ -713,3 +713,41 @@ button,input{font:inherit} button{color:inherit}
   .plate-host{width:91%!important}
   .previous-slot{width:min(38vw,192px)!important}
 }
+
+
+/* ===== v8.5 tighter real plate proportions ===== */
+.plate-svg .gost-main{
+  font-size:70px!important;
+  font-weight:400!important;
+  letter-spacing:0!important;
+}
+.plate-svg .gost-letter{
+  font-size:68px!important;
+}
+.plate-svg .gost-digits{
+  font-size:70px!important;
+  letter-spacing:.4px!important;
+}
+.plate-svg .gost-pair{
+  font-size:68px!important;
+  letter-spacing:.3px!important;
+}
+.plate-svg .gost-region{
+  font-size:50px!important;
+  font-weight:400!important;
+  letter-spacing:0!important;
+}
+.plate-svg .gost-rus{
+  font-size:17px!important;
+}
+.plate-host{
+  width:91%!important;
+  max-width:510px!important;
+}
+.previous-slot{
+  width:min(39vw,198px)!important;
+}
+@media(max-height:760px){
+  .plate-host{width:90%!important}
+  .previous-slot{width:min(36vw,182px)!important}
+}
