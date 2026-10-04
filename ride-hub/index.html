@@ -1,16 +1,111 @@
 <!doctype html>
-<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#101214"><title>НОМЕР • охота за сочетаниями</title><link rel="stylesheet" href="plates.css?v=1"><script src="https://telegram.org/js/telegram-web-app.js" defer></script><script src="plate-engine.js?v=1" defer></script><script src="plates.js?v=1" defer></script></head>
-<body><div class="shell"><header><a class="brand" href="#" aria-label="На главную">НОМЕР<span>®</span></a><span class="edition">КОЛЛЕКЦИЯ / 01</span><button class="icon" id="settings" aria-label="Настройки">☷</button></header>
-<main><section id="hunt" class="page"><div class="section-title"><div><p class="eyebrow">ТВОЙ СЛЕДУЮЩИЙ ТРОФЕЙ</p><h1>Красивый номер.<br><span>Твой счастливый случай.</span></h1></div><span class="serial">№<br><b id="serial">0000</b></span></div>
-<div class="stage" id="stage"><div class="stage-top"><span id="stageLabel">ГОТОВ К ВЫДАЧЕ</span><span class="badge" id="rarity">ПЕРВЫЙ НОМЕР</span></div><div class="plate-wrap" id="plateWrap"></div><div id="result" aria-live="polite"><h2>Какой выпадет тебе?</h2><p>Один клик — новая комбинация.</p></div><div class="stage-bottom"><span>СЕРИЯ 01 / RUS</span><span id="regionLabel">Все регионы</span></div></div>
-<div class="control-row"><button class="subtle" id="regionButton"><span class="small-icon">◎</span><span id="chosenRegion">Все регионы</span><span>⌄</span></button><button class="subtle" id="fast" aria-pressed="false">ϟ <span>Быстро</span></button></div>
-<button class="primary" id="roll"><span>ВЫБИТЬ НОМЕР</span><span class="keycap">↵</span></button><button class="save" id="save" hidden>＋ В коллекцию</button><p class="roll-note">Бесплатно · без ограничений</p>
-<div class="stats"><div><b id="rolls">0</b><span>Выбито</span></div><div><b id="owned">0</b><span>В коллекции</span></div><div><b id="best">—</b><span>Лучший трофей</span></div></div>
-<div class="list-heading"><h2>Последние номера</h2><button class="text-button" id="viewCollection">Коллекция <span>↗</span></button></div><div id="history" class="history"><div class="empty-inline">Здесь появятся твои находки</div></div>
-</section>
-<section id="collection" class="page" hidden><p class="eyebrow">ТВОЙ ЛИЧНЫЙ ГАРАЖ</p><h1>Коллекция<span class="count" id="collectionCount">0</span></h1><div class="collection-tools"><input id="search" type="search" placeholder="Номер или регион" aria-label="Поиск в коллекции"><select id="sort" aria-label="Сортировка"><option value="new">Сначала новые</option><option value="rare">По редкости</option></select></div><div class="filters"><button data-filter="all" class="active">Все</button><button data-filter="favorite">Избранное</button><button data-filter="rare">Редкие</button></div><div id="collectionList" class="collection-grid"></div></section>
-<section id="guide" class="page" hidden><p class="eyebrow">КРАСОТА В СОВПАДЕНИЯХ</p><h1>Редкость номера</h1><p class="lead">Каждая комбинация имеет одинаковый шанс. Ценность — в её рисунке.</p><div id="rarityGuide"></div><div class="info-card"><h2>Как это работает</h2><p>12 букв: А В Е К М Н О Р С Т У Х. Все сочетания цифр от 001 до 999. Регион выбирается случайно из каталога или фиксируется тобой.</p><p>Редкость определяется цифрами и буквами. Регион не меняет класс. Если совпадает несколько правил, выбирается самый высокий класс.</p><p id="poolSize"></p><p>Это игра с виртуальными номерами. Редкость и очки — игровые, без денежной стоимости.</p></div></section>
-</main><nav><button data-page="hunt" class="active"><span>▣</span>Выбить</button><button data-page="collection"><span>▦</span>Коллекция</button><button data-page="guide"><span>◇</span>Редкость</button></nav></div>
-<dialog id="regionDialog"><div class="dialog-top"><h2>Выбери регион</h2><button class="icon" data-close aria-label="Закрыть">×</button></div><input id="regionSearch" type="search" placeholder="Москва, 777, Краснодар…" aria-label="Поиск региона"><div id="regionList"></div></dialog>
-<dialog id="settingsDialog"><div class="dialog-top"><h2>Настройки</h2><button class="icon" data-close aria-label="Закрыть">×</button></div><label class="setting-row">Звуки выдачи <input id="sound" type="checkbox"></label><label class="setting-row">Вибрация <input id="haptic" type="checkbox"></label><div class="info-card"><h3>Твоя коллекция сохраняется</h3><p>На этом устройстве, в этом браузере или Telegram. Экспортируй копию, чтобы перенести её.</p></div><button class="secondary" id="export">Экспорт коллекции</button><label class="secondary file-label">Импорт коллекции<input id="import" type="file" accept="application/json,.json" hidden></label><p class="muted">НОМЕР · версия 1.0</p></dialog>
-<dialog id="detailDialog"><div class="dialog-top"><h2>Твой трофей</h2><button class="icon" data-close aria-label="Закрыть">×</button></div><div id="detailContent"></div></dialog><div class="toast" role="status" id="toast"></div></body></html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#090b10">
+  <title>НОМЕР</title>
+  <link rel="stylesheet" href="plates.css?v=2">
+  <script src="https://telegram.org/js/telegram-web-app.js" defer></script>
+  <script src="plate-engine.js?v=1" defer></script>
+  <script src="plates.js?v=2" defer></script>
+</head>
+<body>
+  <div class="app" id="app">
+    <div class="ambient-glow" id="ambientGlow"></div>
+    <div class="noise"></div>
+
+    <header class="topbar">
+      <button class="icon-button menu-button" id="menuBtn" aria-label="Меню">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="balance">
+        <strong id="balanceValue">0 ₽</strong>
+        <span>0 S</span>
+      </div>
+    </header>
+
+    <main class="machine">
+      <section class="previous-slot" id="previousSlot">
+        <div class="mini-plate-host" id="previousPlate"></div>
+        <div class="previous-meta">
+          <span id="previousTier">Обычный</span>
+          <b id="previousPrice">0 ₽</b>
+        </div>
+      </section>
+
+      <section class="rarity-card" id="rarityCard">
+        <div class="rarity-line">
+          <span id="rarityName">Обычный</span>
+          <strong id="priceValue">0 ₽</strong>
+        </div>
+        <div class="rarity-scale" id="rarityScale" aria-label="Шкала редкости">
+          <i></i><i></i><i></i><i></i><i></i>
+        </div>
+      </section>
+
+      <section class="current-slot">
+        <div class="plate-host" id="currentPlate"></div>
+        <div class="features" id="featureList"></div>
+      </section>
+    </main>
+
+    <aside class="tool-rail">
+      <button id="saveBtn" aria-label="Добавить в коллекцию">＋</button>
+      <button id="settingsBtn" aria-label="Настройки">⚙</button>
+      <button id="collectionBtn" aria-label="Коллекция">◇</button>
+    </aside>
+
+    <button class="roll-orb" id="rollBtn" aria-label="Выбить номер">
+      <span class="play-icon"></span>
+      <span class="orb-dot"></span>
+    </button>
+
+    <button class="region-chip" id="regionBtn">
+      <span class="flag-small"></span>
+      <span id="regionLabel">Россия · все регионы</span>
+      <span class="chev">⌄</span>
+    </button>
+
+    <div class="drawer-backdrop" id="drawerBackdrop"></div>
+    <aside class="drawer" id="drawer" aria-hidden="true">
+      <div class="drawer-head">
+        <div>
+          <p>НОМЕР</p>
+          <span>COLLECT / RUS</span>
+        </div>
+        <button class="drawer-close" id="drawerClose">×</button>
+      </div>
+      <div class="drawer-hero">
+        <span>Твой гараж</span>
+        <strong id="drawerOwned">0</strong>
+        <small>номеров в коллекции</small>
+      </div>
+      <nav class="drawer-nav">
+        <button data-action="hunt" class="active"><span>◉</span><b>Выбивать</b><small>Новые сочетания</small></button>
+        <button data-action="collection"><span>▦</span><b>Коллекция</b><small>Сохранённые номера</small></button>
+        <button data-action="rarity"><span>◇</span><b>Редкости</b><small>Шкала и правила</small></button>
+        <button data-action="region"><span>◎</span><b>Регион</b><small id="drawerRegion">Все регионы</small></button>
+        <button data-action="settings"><span>⚙</span><b>Настройки</b><small>Анимации и вибрация</small></button>
+      </nav>
+      <div class="drawer-foot">
+        <span id="rollCounter">0 выбито</span>
+        <span>v2.0</span>
+      </div>
+    </aside>
+
+    <section class="panel" id="panel" aria-hidden="true">
+      <div class="panel-head">
+        <div>
+          <p id="panelEyebrow">НОМЕР</p>
+          <h2 id="panelTitle">Коллекция</h2>
+        </div>
+        <button id="panelClose">×</button>
+      </div>
+      <div class="panel-body" id="panelBody"></div>
+    </section>
+
+    <div class="toast" id="toast" role="status"></div>
+  </div>
+</body>
+</html>
