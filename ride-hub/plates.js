@@ -413,14 +413,14 @@ function updateSellButton(){
   if(!btn)return;
 
   if(!state.current){
-    btn.classList.add('hidden');
     btn.disabled=true;
     $('#sellCurrentPrice').textContent='0 ₽';
+    $('#currentActions')?.classList.add('hidden');
     return;
   }
 
-  btn.classList.remove('hidden');
   btn.disabled=false;
+  $('#currentActions')?.classList.remove('hidden');
   $('#sellCurrentPrice').textContent=fmtPrice(priceFor(state.current));
 }
 
@@ -573,7 +573,25 @@ function updateSave(){
   const saved=Boolean(
     state.current&&state.collection.some(p=>p.id===state.current.id)
   );
+
   $('#saveBtn').classList.toggle('saved',saved);
+
+  const actions=$('#currentActions');
+  const collectionBtn=$('#collectionCurrentBtn');
+  const collectionLabel=$('#collectionCurrentLabel');
+
+  if(actions){
+    actions.classList.toggle('hidden',!state.current);
+  }
+
+  if(collectionBtn){
+    collectionBtn.classList.toggle('saved',saved);
+    collectionBtn.disabled=!state.current;
+  }
+
+  if(collectionLabel){
+    collectionLabel.textContent=saved?'В коллекции':'В коллекцию';
+  }
 }
 
 function haptic(kind='selection'){
@@ -1052,6 +1070,7 @@ function renderRegion(){
 
 $('#rollBtn').onclick=roll;
 $('#sellCurrentBtn').onclick=sellCurrent;
+$('#collectionCurrentBtn').onclick=saveCurrent;
 $('#saveBtn').onclick=saveCurrent;
 $('#menuBtn').onclick=openDrawer;
 $('#drawerClose').onclick=closeDrawer;
