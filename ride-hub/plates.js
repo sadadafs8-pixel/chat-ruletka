@@ -225,14 +225,14 @@ function plate(p){
 
         <!-- Main registration combination: GOST plate font, 76 mm nominal height -->
         <g class="gost-glyphs" filter="url(#glyphLift-${rid})">
-          <text x="36" y="82" class="gost-main gost-letter">${p.a}</text>
-          <text x="98" y="82" class="gost-main gost-digits">${p.n}</text>
-          <text x="260" y="82" class="gost-main gost-pair">${p.b}${p.c}</text>
+          <text x="36" y="86" class="gost-main gost-letter">${p.a}</text>
+          <text x="98" y="86" class="gost-main gost-digits">${p.n}</text>
+          <text x="260" y="86" class="gost-main gost-pair">${p.b}${p.c}</text>
         </g>
 
         <!-- Region code: 58 mm nominal height -->
         <text
-          x="447" y="56"
+          x="447" y="62"
           text-anchor="middle"
           class="gost-region"
           textLength="${region.length===3?70:48}"
@@ -240,14 +240,14 @@ function plate(p){
         >${region}</text>
 
         <!-- RUS: 20 mm nominal height -->
-        <text x="419" y="88" text-anchor="middle" class="gost-rus">RUS</text>
+        <text x="419" y="92" text-anchor="middle" class="gost-rus">RUS</text>
 
         <!-- Russian flag -->
         <g aria-label="Флаг России">
-          <rect x="449" y="71" width="40" height="20" rx=".7"
+          <rect x="449" y="75" width="40" height="20" rx=".7"
                 fill="#fff" stroke="#777c7f" stroke-width=".8"/>
-          <rect x="449" y="77.7" width="40" height="6.6" fill="#245fbd"/>
-          <rect x="449" y="84.3" width="40" height="6.7" fill="#cf3035"/>
+          <rect x="449" y="81.7" width="40" height="6.6" fill="#245fbd"/>
+          <rect x="449" y="88.3" width="40" height="6.7" fill="#cf3035"/>
         </g>
       </svg>
     </div>
