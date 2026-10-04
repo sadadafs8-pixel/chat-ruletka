@@ -182,7 +182,7 @@ function plate(p){
       x="${x}" y="59"
       text-anchor="middle"
       dominant-baseline="middle"
-      font-family="Arial, Helvetica, sans-serif"
+      font-family="Roboto Condensed, Arial Narrow, Arial, sans-serif"
       font-size="${size}"
       font-weight="${weight}"
       fill="#080909"
@@ -226,18 +226,18 @@ function plate(p){
         <circle cx="502" cy="56" r="4.6"
                 fill="url(#plateScrew-${rid})" stroke="#505559" stroke-width="1"/>
 
-        ${glyph(52,p.a,64)}
-        ${glyph(118,p.n[0],74)}
-        ${glyph(174,p.n[1],74)}
-        ${glyph(230,p.n[2],74)}
-        ${glyph(302,p.b,64)}
-        ${glyph(350,p.c,64)}
+        ${glyph(48,p.a,65)}
+        ${glyph(112,p.n[0],76)}
+        ${glyph(169,p.n[1],76)}
+        ${glyph(226,p.n[2],76)}
+        ${glyph(300,p.b,65)}
+        ${glyph(349,p.c,65)}
 
         <text
           x="456" y="39"
           text-anchor="middle"
           dominant-baseline="middle"
-          font-family="Arial, Helvetica, sans-serif"
+          font-family="Roboto Condensed, Arial Narrow, Arial, sans-serif"
           font-size="46"
           font-weight="700"
           fill="#080909"
@@ -249,7 +249,7 @@ function plate(p){
           x="426" y="82"
           text-anchor="middle"
           dominant-baseline="middle"
-          font-family="Arial, Helvetica, sans-serif"
+          font-family="Roboto Condensed, Arial Narrow, Arial, sans-serif"
           font-size="15"
           font-weight="700"
           fill="#0b0c0d"
@@ -297,6 +297,7 @@ function renderCurrent(){
   if(!p){
     const demo={a:'А',n:'024',b:'В',c:'М',r:'252'};
     $('#currentPlate').innerHTML=plate(demo);
+    updatePrevious(demo);
     $('#featureList').innerHTML='<span>Нажми кнопку, чтобы выбить первый номер</span>';
     setTierVisual(0);
     $('#priceValue').textContent='0 ₽';
@@ -312,7 +313,7 @@ function renderCurrent(){
   $('#featureList').innerHTML=featuresFor(p).map(x=>'<span>'+x+'</span>').join('');
   $('#app').classList.add('revealed');
 
-  updatePrevious(state.previous);
+  updatePrevious(p);
   updateSave();
 }
 
@@ -387,8 +388,8 @@ async function roll(){
     const temp=generate(state.region);
     $('#currentPlate').innerHTML=plate(temp);
 
-    if(i%4===0){
-      if(old) updatePrevious(old);
+    if(i%2===0){
+      updatePrevious(temp);
       haptic();
     }
 
@@ -402,7 +403,7 @@ async function roll(){
   persist();
 
   $('#currentPlate').innerHTML=plate(final);
-  updatePrevious(old);
+  updatePrevious(final);
 
   $('#app').classList.remove('rolling');
   $('#app').classList.add('final-pop');
@@ -772,7 +773,7 @@ document.addEventListener('keydown',e=>{
 load();
 renderStats();
 renderCurrent();
-updatePrevious(state.previous);
+updatePrevious(state.current);
 
 try{
   tg?.ready();
