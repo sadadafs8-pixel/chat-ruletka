@@ -863,3 +863,30 @@ button,input{font:inherit} button{color:inherit}
     max-width:min(56vw,270px)!important;
   }
 }
+
+
+/* ===== v8.7 vertical plate alignment ===== */
+.plate-svg .gost-main{
+  font-size:68px!important;
+  font-weight:400!important;
+  letter-spacing:0!important;
+}
+.plate-svg .gost-letter{
+  font-size:66px!important;
+}
+.plate-svg .gost-digits{
+  font-size:68px!important;
+  letter-spacing:.2px!important;
+}
+.plate-svg .gost-pair{
+  font-size:66px!important;
+  letter-spacing:.2px!important;
+}
+.plate-svg .gost-region{
+  font-size:49px!important;
+  font-weight:400!important;
+  letter-spacing:0!important;
+}
+.plate-svg .gost-rus{
+  font-size:16px!important;
+}
