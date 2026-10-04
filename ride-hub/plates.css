@@ -1336,3 +1336,79 @@ button,input{font:inherit} button{color:inherit}
     min-width:175px;
   }
 }
+
+
+/* ===== v9.3 sequential slot reveal ===== */
+/* The plate itself stays still; only each symbol spins and locks in. */
+.app.rolling .plate-host{
+  animation:none!important;
+  filter:none!important;
+}
+
+.plate-svg .gost-char,
+.plate-svg .gost-region{
+  transform-box:fill-box;
+  transform-origin:center;
+  transition:opacity .16s ease,filter .16s ease;
+}
+
+.plate-svg .slot-pending{
+  opacity:.24!important;
+  filter:blur(.55px);
+}
+
+.plate-svg .slot-active{
+  opacity:1!important;
+  filter:none;
+}
+
+.plate-svg .slot-tick{
+  animation:slotTick 72ms linear;
+}
+
+.plate-svg .slot-land{
+  animation:slotLand 230ms cubic-bezier(.18,.9,.22,1.25);
+}
+
+@keyframes slotTick{
+  0%{
+    transform:translateY(-10px) scaleY(.84);
+    opacity:.18;
+    filter:blur(1.2px);
+  }
+  48%{
+    transform:translateY(5px) scaleY(1.08);
+    opacity:.72;
+    filter:blur(.35px);
+  }
+  100%{
+    transform:translateY(0) scaleY(1);
+    opacity:1;
+    filter:blur(0);
+  }
+}
+
+@keyframes slotLand{
+  0%{
+    transform:translateY(-7px) scale(1.08);
+    filter:blur(.55px);
+  }
+  55%{
+    transform:translateY(2px) scale(.97);
+    filter:blur(0);
+  }
+  100%{
+    transform:none;
+    filter:none;
+  }
+}
+
+.app.slot-complete .plate-svg{
+  animation:slotPlateGlow 340ms ease;
+}
+
+@keyframes slotPlateGlow{
+  0%{filter:drop-shadow(0 0 0 rgba(39,163,255,0))}
+  45%{filter:drop-shadow(0 0 11px rgba(39,163,255,.28))}
+  100%{filter:drop-shadow(0 0 0 rgba(39,163,255,0))}
+}
