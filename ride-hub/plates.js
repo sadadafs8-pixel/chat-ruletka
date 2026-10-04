@@ -1,26 +1,246 @@
 'use strict';
 const {REGIONS,TIERS,tier,generate,valid,key}=PlateEngine;
-const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)], tg=window.Telegram?.WebApp;
-const storageKey='nomer-v1-'+(tg?.initDataUnsafe?.user?.id||'local');
-let state={rolls:0,collection:[],history:[],current:null,region:'all',fast:false,sound:false,haptic:true,best:-1},busy=false,filter='all',page='hunt',detail=null,timer,audio;
-try{const saved=JSON.parse(localStorage.getItem(storageKey)||'null');if(saved&&typeof saved==='object'){state={...state,...saved};state.collection=(Array.isArray(saved.collection)?saved.collection:[]).filter(valid).slice(0,5000);state.history=(Array.isArray(saved.history)?saved.history:[]).filter(valid).slice(0,12);state.current=valid(saved.current)?saved.current:null;if(!REGIONS.some(r=>r.code===state.region))state.region='all';state.rolls=Math.max(0,Number(state.rolls)||0);state.best=Math.max(-1,Math.min(5,Number(state.best)||0));}}catch{showToast('Не удалось прочитать сохранение');}
-function persist(){try{localStorage.setItem(storageKey,JSON.stringify(state));return true}catch{showToast('Память заполнена. Экспортируй коллекцию.');return false}}
-function showToast(text){clearTimeout(timer);$('#toast').textContent=text;$('#toast').classList.add('visible');timer=setTimeout(()=>$('#toast').classList.remove('visible'),2700)}
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const tg=window.Telegram?.WebApp;
+const DISPLAY_TIERS=[
+  {name:'Обычный',color:'#9198a1',min:40,max:900,desc:'Обычная комбинация без выраженного рисунка.'},
+  {name:'Необычный',color:'#35e982',min:1800,max:890000,desc:'Есть повтор цифр или букв.'},
+  {name:'Редкий',color:'#318dff',min:900000,max:4900000,desc:'Зеркало, последовательность или сильный цифровой рисунок.'},
+  {name:'Эпический',color:'#a15aff',min:5000000,max:9900000,desc:'Сильное совпадение букв или особая серия цифр.'},
+  {name:'Легендарный',color:'#f0a51a',min:10000000,max:29990000,desc:'Максимально выразительное сочетание.'}
+];
+const baseKey='nomer-v2-'+(tg?.initDataUnsafe?.user?.id||'local');
+const oldKey='nomer-v1-'+(tg?.initDataUnsafe?.user?.id||'local');
+let state={rolls:0,collection:[],history:[],current:null,previous:null,region:'all',haptic:true,reduced:false};
+let busy=false,toastTimer=0;
+
+function load(){
+  try{
+    let raw=localStorage.getItem(baseKey);
+    if(!raw){
+      const old=JSON.parse(localStorage.getItem(oldKey)||'null');
+      if(old&&typeof old==='object') raw=JSON.stringify({rolls:old.rolls||0,collection:old.collection||[],history:old.history||[],current:old.current||null,region:old.region||'all',haptic:old.haptic!==false});
+    }
+    const saved=JSON.parse(raw||'null');
+    if(saved&&typeof saved==='object'){
+      state={...state,...saved};
+      state.collection=(Array.isArray(state.collection)?state.collection:[]).filter(valid).slice(0,5000);
+      state.history=(Array.isArray(state.history)?state.history:[]).filter(valid).slice(0,20);
+      state.current=valid(state.current)?state.current:null;
+      state.previous=valid(state.previous)?state.previous:null;
+      state.rolls=Math.max(0,Number(state.rolls)||0);
+      if(state.region!=='all'&&!REGIONS.some(r=>r.code===state.region))state.region='all';
+    }
+  }catch{}
+}
+function persist(){try{localStorage.setItem(baseKey,JSON.stringify(state))}catch{}}
+function fmtPrice(n){return Math.round(n).toLocaleString('ru-RU')+' ₽'}
 function regionName(code){return REGIONS.find(r=>r.code===code)?.name||'Все регионы'}
-function plate(p){return `<div class="plate" aria-label="${key(p)}"><div class="plate-main"><span class="letter">${p.a}</span><span class="digits">${p.n}</span><span class="letter">${p.b}${p.c}</span></div><div class="plate-region"><strong>${p.r}</strong><div class="plate-country">RUS<i class="flag"></i></div></div></div>`}
-function isSaved(p){return state.collection.some(x=>key(x)===key(p))}
-function display(p,preview=false){$('#plateWrap').innerHTML=plate(p);if(preview)return;const t=TIERS[tier(p)];$('#stage').style.setProperty('--rarity',t.color);$('#rarity').textContent=t.name.toUpperCase();$('#stageLabel').textContent='НОМЕР ВЫДАН';$('#regionLabel').textContent=regionName(p.r);$('#result').innerHTML=`<h2 style="color:${t.color}">${t.name}</h2><p>${reason(p)}</p>`;$('#save').hidden=false;$('#save').disabled=isSaved(p);$('#save').textContent=isSaved(p)?'✓ Уже в коллекции':'＋ В коллекцию';}
-function reason(p){return ['У каждого номера начинается своя история','Красота в повторении','Сочетание, которое хочется оставить','Особенная серия. Забирай в коллекцию.','Три цифры. Один идеальный ритм.','Три буквы. Три цифры. Полное совпадение.'][tier(p)]}
-function renderStats(){$('#rolls').textContent=state.rolls.toLocaleString('ru');$('#serial').textContent=String(state.rolls).padStart(4,'0');$('#owned').textContent=state.collection.length;$('#best').textContent=state.best>=0?TIERS[state.best].name:'—';$('#collectionCount').textContent=state.collection.length;$('#chosenRegion').textContent=state.region==='all'?'Все регионы':state.region+' · '+regionName(state.region);$('#fast').setAttribute('aria-pressed',Boolean(state.fast));}
-function renderHistory(){$('#history').innerHTML=state.history.length?state.history.slice(0,6).map(p=>`<button class="history-row" data-id="${p.id}" style="--rarity:${TIERS[tier(p)].color}"><div class="mini">${plate(p)}</div><div class="history-meta"><b>${TIERS[tier(p)].name}</b><p>${regionName(p.r)}</p></div><span class="history-save">${isSaved(p)?'✓':'＋'}</span></button>`).join(''):'<div class="empty-inline">Здесь появятся твои находки</div>';}
-function navigate(next){page=next;$$('.page').forEach(x=>x.hidden=x.id!==next);$$('nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===next));if(next==='collection')renderCollection();try{if(next==='hunt')tg?.BackButton.hide();else tg?.BackButton.show();}catch{}window.scrollTo({top:0,behavior:'instant'});}
-function renderCollection(){renderStats();let list=state.collection.filter(p=>(filter!=='favorite'||p.favorite)&&(filter!=='rare'||tier(p)>=2));const query=$('#search').value.toLowerCase().replace(/\s/g,'');if(query)list=list.filter(p=>(key(p)+regionName(p.r)).toLowerCase().replace(/\s/g,'').includes(query));list.sort($('#sort').value==='rare'?(a,b)=>tier(b)-tier(a)||b.at-a.at:(a,b)=>b.at-a.at);$('#collectionList').innerHTML=list.length?list.map(p=>`<button class="collect-card" data-id="${p.id}" style="--rarity:${TIERS[tier(p)].color}">${plate(p)}<div class="card-footer"><span>${TIERS[tier(p)].name}</span><span>${p.favorite?'★':'◇'}</span></div></button>`).join(''):`<div class="empty"><span>▦</span><h2>${state.collection.length?'Ничего не нашлось':'Здесь будут твои трофеи'}</h2><p>${state.collection.length?'Попробуй другой запрос или фильтр.':'Выбивай номера и сохраняй понравившиеся.<br>Начни с первого счастливого сочетания.'}</p><button class="primary" id="emptyRoll">Выбить номер</button></div>`;$('#emptyRoll')?.addEventListener('click',()=>navigate('hunt'));}
-function savePlate(p){if(isSaved(p)){showToast('Этот номер уже в коллекции');return;}if(state.collection.length>=5000){showToast('Лимит 5 000 номеров. Экспортируй коллекцию.');return;}state.collection.push({...p});persist();renderStats();renderHistory();if(state.current)display(state.current);showToast('Номер добавлен в коллекцию');}
-function tick(end=false){if(state.haptic){try{end?tg?.HapticFeedback.notificationOccurred('success'):tg?.HapticFeedback.selectionChanged()}catch{}}if(!state.sound)return;try{audio=audio||new(window.AudioContext||window.webkitAudioContext)();audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.connect(g);g.connect(audio.destination);o.type='sine';o.frequency.setValueAtTime(end?880:280,audio.currentTime);g.gain.setValueAtTime(.045,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+.08);o.start();o.stop(audio.currentTime+.09)}catch{}}
-async function roll(){if(busy)return;busy=true;$('#roll').disabled=true;$('#save').hidden=true;$('#stage').classList.remove('reveal');$('#stage').classList.add('rolling');$('#stageLabel').textContent='ПОДБИРАЕМ КОМБИНАЦИЮ';$('#rarity').textContent='ВЫДАЧА';$('#result').innerHTML='<h2>Ловим твоё сочетание…</h2><p>Следующий номер может стать особенным</p>';const final=generate(state.region), reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;const steps=reduced?1:state.fast?5:16;for(let i=0;i<steps;i++){display(generate(state.region),true);tick();await new Promise(r=>setTimeout(r,reduced?0:state.fast?45:40+i*6));}state.current=final;state.rolls++;state.best=Math.max(state.best,tier(final));state.history=[final,...state.history].slice(0,12);persist();display(final);renderStats();renderHistory();$('#stage').classList.remove('rolling');$('#stage').classList.add('reveal');$('#roll').disabled=false;$('#roll>span').textContent='ВЫБИТЬ ЕЩЁ';busy=false;tick(true);}
-function showDetail(p){detail=p;const t=TIERS[tier(p)],saved=state.collection.find(x=>key(x)===key(p));$('#detailContent').style.setProperty('--rarity',t.color);$('#detailContent').innerHTML=plate(p)+`<h3>${t.name}</h3><p>${regionName(p.r)} · ${new Date(p.at).toLocaleDateString('ru')}</p><p>${t.desc}</p>${saved?`<button class="secondary" id="favorite">${saved.favorite?'★ Убрать из избранного':'☆ В избранное'}</button>`:'<button class="primary" id="detailSave">В коллекцию</button>'}<button class="secondary" id="copyPlate">Скопировать номер</button>${saved?'<button class="secondary" id="removePlate">Убрать из коллекции</button>':''}`;$('#detailSave')?.addEventListener('click',()=>{savePlate(p);showDetail(p)});$('#favorite')?.addEventListener('click',()=>{saved.favorite=!saved.favorite;persist();renderCollection();showDetail(p)});$('#copyPlate').onclick=async()=>{try{await navigator.clipboard.writeText(key(p));showToast('Номер скопирован')}catch{showToast(key(p))}};$('#removePlate')?.addEventListener('click',()=>{state.collection=state.collection.filter(x=>key(x)!==key(p));persist();$('#detailDialog').close();renderCollection();renderHistory();if(state.current)display(state.current);showToast('Убрано из коллекции')});if(!$('#detailDialog').open)$('#detailDialog').showModal();}
-function renderRegions(){const query=$('#regionSearch').value.toLowerCase().trim();$('#regionList').innerHTML=(!query?`<button class="region-option ${state.region==='all'?'selected':''}" data-region="all"><span>◎</span>Все регионы</button>`:'')+REGIONS.filter(r=>(r.code+' '+r.name).toLowerCase().includes(query)).map(r=>`<button class="region-option ${state.region===r.code?'selected':''}" data-region="${r.code}"><span>${r.code}</span>${r.name}</button>`).join('');if(!$('#regionList').children.length)$('#regionList').innerHTML='<p class="muted">Регион не найден</p>';}
-$('#roll').onclick=roll;$('#save').onclick=()=>state.current&&savePlate(state.current);$('#fast').onclick=()=>{state.fast=!state.fast;persist();renderStats()};$('#regionButton').onclick=()=>{$('#regionSearch').value='';renderRegions();$('#regionDialog').showModal()};$('#regionSearch').oninput=renderRegions;$('#regionList').onclick=e=>{const b=e.target.closest('[data-region]');if(!b)return;state.region=b.dataset.region;persist();renderStats();$('#regionDialog').close()};$('#settings').onclick=()=>{$('#sound').checked=state.sound;$('#haptic').checked=state.haptic;$('#settingsDialog').showModal()};for(const name of ['sound','haptic'])$('#'+name).onchange=e=>{state[name]=e.target.checked;persist();if(name==='sound')tick(true)};$$('[data-close]').forEach(b=>b.onclick=()=>b.closest('dialog').close());$$('dialog').forEach(d=>d.addEventListener('click',e=>{if(e.target===d){const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close()}}));$$('nav button').forEach(b=>b.onclick=()=>navigate(b.dataset.page));$('.brand').onclick=e=>{e.preventDefault();navigate('hunt')};$('#viewCollection').onclick=()=>navigate('collection');$('#search').oninput=renderCollection;$('#sort').onchange=renderCollection;$$('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;$$('[data-filter]').forEach(x=>x.classList.toggle('active',x===b));renderCollection()});for(const sel of ['#history','#collectionList'])$(sel).onclick=e=>{const b=e.target.closest('[data-id]');if(b){const p=[...state.collection,...state.history].find(p=>p.id===b.dataset.id);if(p)showDetail(p)}};
-$('#export').onclick=()=>{const blob=new Blob([JSON.stringify({version:1,collection:state.collection},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='nomer-collection.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);showToast('Копия коллекции подготовлена')};$('#import').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>5000000)throw Error();const data=JSON.parse(await file.text());if(data.version!==1||!Array.isArray(data.collection)||!data.collection.every(valid))throw Error();const merged=new Map(state.collection.map(p=>[key(p),p]));data.collection.forEach(p=>merged.set(key(p),{a:p.a,b:p.b,c:p.c,n:p.n,r:p.r,id:p.id,at:p.at,favorite:Boolean(p.favorite)}));if(merged.size>5000)throw Error();state.collection=[...merged.values()];persist();renderStats();renderHistory();showToast('Коллекция импортирована')}catch{showToast('Не удалось импортировать файл коллекции')}e.target.value='';};
-$('#rarityGuide').innerHTML=[...TIERS].reverse().map((t,i)=>{const [a,n,b,c]=t.example;return `<div class="guide-row" style="--rarity:${t.color}"><div class="mini">${plate({a,n,b,c,r:'77'})}</div><div><h2>${t.name}</h2><p>${t.desc}</p></div></div>`}).join('');$('#poolSize').textContent=`В каталоге ${REGIONS.length} кодов, включая исторические. ${ (12**3*999).toLocaleString('ru')} сочетаний на каждый регион. Вероятность ультраредкого номера — 1 из 15 984.`;
-renderStats();renderHistory();if(state.current)display(state.current);else $('#plateWrap').innerHTML=plate({a:'А',n:'777',b:'А',c:'А',r:'777'});document.addEventListener('keydown',e=>{if(e.key==='Enter'&&page==='hunt'&&!$('dialog[open]')&&!['INPUT','SELECT','BUTTON'].includes(document.activeElement.tagName)){e.preventDefault();roll()}});try{tg?.ready();tg?.expand();tg?.setHeaderColor('#101214');tg?.setBackgroundColor('#101214');tg?.BackButton.onClick(()=>navigate('hunt'));}catch{}
+function hashString(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function displayTier(p){return Math.min(4,tier(p))}
+function priceFor(p){
+  const t=displayTier(p),d=DISPLAY_TIERS[t],h=hashString(key(p));
+  let max=d.max,min=d.min;
+  if(t===4&&tier(p)===5){min=30000000;max=99900000}
+  const x=(h%100000)/100000;
+  return Math.round(min+(max-min)*(0.16+0.84*x));
+}
+function featuresFor(p){
+  const out=[],letters=p.a+p.b+p.c,n=p.n;
+  if(n[0]===n[1]&&n[1]===n[2])out.push('3 одинаковые цифры');
+  else if(new Set(n).size<3)out.push('Повтор цифр');
+  if(letters[0]===letters[1]&&letters[1]===letters[2])out.push('3 одинаковые буквы');
+  else if(new Set(letters).size<3)out.push('Повтор букв');
+  if(n[0]===n[2])out.push('Зеркальная комбинация');
+  if(['123','234','345','456','567','678','789','987','876','765','654','543','432','321','210'].includes(n))out.push('Последовательность цифр');
+  if(Number(n)%100===0)out.push('Ровная сотня');
+  if(String(Number(p.r)).length<=3&&(n.includes(String(Number(p.r)).padStart(2,'0'))||n.endsWith(String(Number(p.r)))))out.push('Цифры совпадают с регионом');
+  if(!out.length)out.push('Уникальная комбинация');
+  return out.slice(0,4);
+}
+function plate(p){
+  return '<div class="plate"><div class="plate-main"><span class="letter">'+p.a+'</span><span class="digits">'+p.n+'</span><span class="letter">'+p.b+p.c+'</span></div><div class="plate-region"><strong>'+p.r+'</strong><div class="plate-country">RUS<i class="flag"></i></div></div></div>';
+}
+function setTierVisual(index){
+  const d=DISPLAY_TIERS[index];
+  document.documentElement.style.setProperty('--tier',d.color);
+  $('#rarityName').textContent=d.name;
+  $$('#rarityScale i').forEach((el,i)=>el.classList.toggle('active',i<=index));
+}
+function updatePrevious(p){
+  if(!p){$('#previousSlot').classList.add('hidden');return}
+  $('#previousSlot').classList.remove('hidden');
+  $('#previousPlate').innerHTML=plate(p);
+  const t=displayTier(p);
+  $('#previousTier').textContent=DISPLAY_TIERS[t].name;
+  $('#previousTier').style.color=DISPLAY_TIERS[t].color;
+  $('#previousPrice').textContent=fmtPrice(priceFor(p));
+}
+function renderCurrent(immediate=true){
+  const p=state.current;
+  if(!p){
+    const demo={a:'М',n:'222',b:'М',c:'М',r:'22'};
+    $('#currentPlate').innerHTML=plate(demo);
+    $('#featureList').innerHTML='<span>Нажми синюю кнопку, чтобы выбить первый номер</span>';
+    setTierVisual(0);$('#priceValue').textContent='0 ₽';return;
+  }
+  $('#currentPlate').innerHTML=plate(p);
+  const t=displayTier(p);
+  setTierVisual(t);
+  $('#priceValue').textContent=fmtPrice(priceFor(p));
+  $('#featureList').innerHTML=featuresFor(p).map(x=>'<span>'+x+'</span>').join('');
+  $('#app').classList.add('revealed');
+  updatePrevious(state.previous);
+  updateSave();
+}
+function collectionValue(){return state.collection.reduce((sum,p)=>sum+priceFor(p),0)}
+function renderStats(){
+  $('#drawerOwned').textContent=state.collection.length.toLocaleString('ru-RU');
+  $('#rollCounter').textContent=state.rolls.toLocaleString('ru-RU')+' выбито';
+  $('#balanceValue').textContent=fmtPrice(collectionValue());
+  const label=state.region==='all'?'Россия · все регионы':'Россия · '+state.region;
+  $('#regionLabel').textContent=label;
+  $('#drawerRegion').textContent=state.region==='all'?'Все регионы':state.region+' · '+regionName(state.region);
+  updateSave();
+}
+function updateSave(){
+  const saved=state.current&&state.collection.some(p=>key(p)===key(state.current));
+  $('#saveBtn').classList.toggle('saved',Boolean(saved));
+  $('#saveBtn').textContent=saved?'✓':'＋';
+}
+function haptic(kind='selection'){
+  if(!state.haptic)return;
+  try{kind==='success'?tg?.HapticFeedback.notificationOccurred('success'):tg?.HapticFeedback.selectionChanged()}catch{}
+}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+function easeOutCubic(x){return 1-Math.pow(1-x,3)}
+async function roll(){
+  if(busy)return;
+  busy=true;
+  closeDrawer();
+  $('#app').classList.remove('revealed','final-pop');
+  $('#app').classList.add('rolling');
+  $('#featureList').innerHTML='';
+  $('#priceValue').textContent='0 ₽';
+  setTierVisual(0);
+  const old=state.current;
+  const final=generate(state.region);
+  const reduced=state.reduced||matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const steps=reduced?2:22;
+  for(let i=0;i<steps;i++){
+    const temp=generate(state.region);
+    $('#currentPlate').innerHTML=plate(temp);
+    if(i%3===0){updatePrevious(i<4?old:temp);haptic()}
+    await sleep(reduced?20:42+Math.min(55,i*2.2));
+  }
+  state.previous=old;
+  state.current=final;
+  state.rolls++;
+  state.history=[final,...state.history].slice(0,20);
+  persist();
+  $('#currentPlate').innerHTML=plate(final);
+  updatePrevious(old);
+  $('#app').classList.remove('rolling');
+  $('#app').classList.add('final-pop');
+  await sleep(reduced?80:380);
+  $('#app').classList.remove('final-pop');
+  $('#app').classList.add('revealed');
+  await analyze(final,reduced);
+  renderStats();
+  haptic('success');
+  busy=false;
+}
+async function analyze(p,reduced){
+  const targetTier=displayTier(p),targetPrice=priceFor(p);
+  const duration=reduced?220:3200;
+  const start=performance.now();
+  return new Promise(resolve=>{
+    function frame(now){
+      const raw=Math.min(1,(now-start)/duration);
+      const eased=easeOutCubic(raw);
+      $('#priceValue').textContent=fmtPrice(targetPrice*eased);
+      const stage=targetTier===0?0:Math.min(targetTier,Math.floor(raw*(targetTier+1)));
+      setTierVisual(stage);
+      if(raw<1)requestAnimationFrame(frame);
+      else{
+        setTierVisual(targetTier);
+        $('#priceValue').textContent=fmtPrice(targetPrice);
+        $('#featureList').innerHTML=featuresFor(p).map(x=>'<span>'+x+'</span>').join('');
+        resolve();
+      }
+    }
+    requestAnimationFrame(frame);
+  });
+}
+function saveCurrent(){
+  if(!state.current)return showToast('Сначала выбей номер');
+  const i=state.collection.findIndex(p=>key(p)===key(state.current));
+  if(i>=0){state.collection.splice(i,1);showToast('Убрано из коллекции')}
+  else{
+    if(state.collection.length>=5000)return showToast('Лимит коллекции — 5 000');
+    state.collection.unshift({...state.current});showToast('Добавлено в коллекцию');haptic('success')
+  }
+  persist();renderStats();
+  if($('#panel').classList.contains('open')&&$('#panelTitle').textContent==='Коллекция')renderCollection();
+}
+function showToast(text){clearTimeout(toastTimer);$('#toast').textContent=text;$('#toast').classList.add('visible');toastTimer=setTimeout(()=>$('#toast').classList.remove('visible'),1800)}
+function openDrawer(){$('#drawer').classList.add('open');$('#drawerBackdrop').classList.add('open');$('#drawer').setAttribute('aria-hidden','false')}
+function closeDrawer(){$('#drawer').classList.remove('open');$('#drawerBackdrop').classList.remove('open');$('#drawer').setAttribute('aria-hidden','true')}
+function openPanel(title,eyebrow='НОМЕР'){
+  closeDrawer();$('#panelTitle').textContent=title;$('#panelEyebrow').textContent=eyebrow;$('#panel').classList.add('open');$('#panel').setAttribute('aria-hidden','false')
+}
+function closePanel(){$('#panel').classList.remove('open');$('#panel').setAttribute('aria-hidden','true')}
+function renderCollection(){
+  openPanel('Коллекция','ТВОЙ ГАРАЖ');
+  const body=$('#panelBody');
+  if(!state.collection.length){body.innerHTML='<div class="empty-state"><b>Пока пусто</b><span>Сохраняй номера кнопкой «＋» слева.</span></div>';return}
+  body.innerHTML='<div class="collection-grid">'+state.collection.map((p,i)=>{
+    const t=displayTier(p),d=DISPLAY_TIERS[t];
+    return '<button class="collection-card" data-remove="'+i+'" style="--card-tier:'+d.color+'"><div>'+plate(p)+'</div><div class="collection-meta"><b>'+d.name+'</b><span>'+fmtPrice(priceFor(p))+'</span></div></button>'
+  }).join('')+'</div>';
+  body.querySelectorAll('[data-remove]').forEach(btn=>btn.onclick=()=>{
+    const idx=Number(btn.dataset.remove),p=state.collection[idx];
+    if(p&&confirm('Убрать '+key(p)+' из коллекции?')){state.collection.splice(idx,1);persist();renderStats();renderCollection()}
+  });
+}
+function renderRarity(){
+  openPanel('Редкости','ШКАЛА ЦЕННОСТИ');
+  $('#panelBody').innerHTML='<div class="tier-list">'+DISPLAY_TIERS.map((d,i)=>'<div class="tier-item" style="--c:'+d.color+'"><div class="tier-top"><b>'+d.name+'</b><strong>'+fmtPrice(d.min)+' — '+fmtPrice(d.max)+'</strong></div><p>'+d.desc+'</p></div>').join('')+'<div class="tier-item" style="--c:#f0a51a"><div class="tier-top"><b>Легендарный +</b><strong>до 99 900 000 ₽</strong></div><p>Тройное совпадение цифр и букв. Цена внутри приложения игровая и не является реальной рыночной оценкой.</p></div></div>';
+}
+function renderSettings(){
+  openPanel('Настройки','ИНТЕРФЕЙС');
+  $('#panelBody').innerHTML='<div class="setting"><div>Вибрация<small>Отклик Telegram при выбивании</small></div><button class="switch '+(state.haptic?'on':'')+'" id="hapticSwitch"><i></i></button></div><div class="setting"><div>Ускорить анимации<small>Сократить перебор и анализ цены</small></div><button class="switch '+(state.reduced?'on':'')+'" id="reducedSwitch"><i></i></button></div>';
+  $('#hapticSwitch').onclick=()=>{state.haptic=!state.haptic;persist();renderSettings()};
+  $('#reducedSwitch').onclick=()=>{state.reduced=!state.reduced;persist();renderSettings()};
+}
+function renderRegion(filter=''){
+  openPanel('Регион','ГЕОГРАФИЯ');
+  const body=$('#panelBody');
+  body.innerHTML='<input class="region-search" id="regionSearch" placeholder="Москва, 777, Краснодар…"><div class="region-list" id="regionList"></div>';
+  const input=$('#regionSearch'),list=$('#regionList');
+  function paint(){
+    const q=input.value.trim().toLowerCase();
+    const rows=[{code:'all',name:'Все регионы'},...REGIONS].filter(r=>!q||(r.code+' '+r.name).toLowerCase().includes(q));
+    list.innerHTML=rows.map(r=>'<button class="region-option '+(state.region===r.code?'selected':'')+'" data-code="'+r.code+'"><span>'+r.name+'</span><small>'+(r.code==='all'?'RUS':r.code)+'</small></button>').join('');
+    list.querySelectorAll('[data-code]').forEach(b=>b.onclick=()=>{state.region=b.dataset.code;persist();renderStats();closePanel();showToast(state.region==='all'?'Все регионы':regionName(state.region))});
+  }
+  input.oninput=paint;paint();input.focus();
+}
+$('#rollBtn').onclick=roll;
+$('#menuBtn').onclick=openDrawer;$('#drawerClose').onclick=closeDrawer;$('#drawerBackdrop').onclick=closeDrawer;
+$('#panelClose').onclick=closePanel;
+$('#saveBtn').onclick=saveCurrent;
+$('#settingsBtn').onclick=renderSettings;
+$('#collectionBtn').onclick=renderCollection;
+$('#regionBtn').onclick=()=>renderRegion();
+$$('.drawer-nav [data-action]').forEach(b=>b.onclick=()=>{
+  const a=b.dataset.action;
+  if(a==='hunt')closeDrawer();
+  if(a==='collection')renderCollection();
+  if(a==='rarity')renderRarity();
+  if(a==='region')renderRegion();
+  if(a==='settings')renderSettings();
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closePanel();closeDrawer()}if(e.key==='Enter'&&!busy&&!$('#panel').classList.contains('open'))roll()});
+load();renderStats();renderCurrent();updatePrevious(state.previous);
+try{tg?.ready();tg?.expand();tg?.setHeaderColor('#090b10');tg?.setBackgroundColor('#090b10')}catch{}
