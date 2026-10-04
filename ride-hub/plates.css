@@ -1487,3 +1487,138 @@ button,input{font:inherit} button{color:inherit}
   50%{filter:drop-shadow(0 0 7px rgba(39,163,255,.20))}
   100%{filter:drop-shadow(0 0 0 rgba(39,163,255,0))}
 }
+
+
+/* ===== v9.7 premium roll + spacing ===== */
+/* Keep the sell action clearly separated from the roll control. */
+.sell-current{
+  margin-top:0!important;
+  transform:translateY(-22px)!important;
+  min-width:194px!important;
+  height:40px!important;
+  padding:0 17px!important;
+  border-radius:15px!important;
+  border-color:rgba(77,158,239,.30)!important;
+  background:
+    linear-gradient(180deg,rgba(13,35,59,.96),rgba(5,18,33,.98))!important;
+  box-shadow:
+    inset 0 1px rgba(255,255,255,.045),
+    0 9px 24px rgba(0,0,0,.20)!important;
+}
+
+.sell-current:active{
+  transform:translateY(-22px) scale(.975)!important;
+}
+
+.sell-current span{
+  font-size:11px!important;
+  font-weight:700!important;
+  letter-spacing:.01em!important;
+}
+
+.sell-current strong{
+  font-size:12px!important;
+  font-weight:850!important;
+}
+
+/* More premium, restrained main roll button. */
+.roll-orb{
+  bottom:calc(13.6% + var(--safe-bottom))!important;
+  width:110px!important;
+  height:110px!important;
+  border:1px solid rgba(111,196,255,.75)!important;
+  background:
+    radial-gradient(circle at 50% 38%,rgba(64,168,255,.20),transparent 38%),
+    radial-gradient(circle at 50% 65%,rgba(0,89,189,.22),transparent 58%),
+    linear-gradient(180deg,#0a223c 0%,#061426 48%,#030c18 100%)!important;
+  box-shadow:
+    0 0 0 4px rgba(17,116,213,.20),
+    0 0 0 8px rgba(16,90,164,.08),
+    0 18px 34px rgba(0,0,0,.34),
+    0 0 30px rgba(29,147,255,.23),
+    inset 0 1px 0 rgba(255,255,255,.10),
+    inset 0 -13px 28px rgba(0,0,0,.28)!important;
+  transition:transform .12s ease,box-shadow .18s ease!important;
+}
+
+.roll-orb::before{
+  content:"";
+  position:absolute;
+  inset:8px;
+  border-radius:50%;
+  border:1px solid rgba(104,194,255,.30);
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.045),transparent 38%),
+    radial-gradient(circle at 50% 45%,rgba(28,139,239,.12),transparent 70%);
+  box-shadow:
+    inset 0 0 22px rgba(19,119,220,.14),
+    0 0 12px rgba(19,119,220,.10);
+  pointer-events:none;
+}
+
+.roll-orb::after{
+  content:"";
+  position:absolute;
+  left:24%;
+  right:24%;
+  top:12px;
+  height:24px;
+  border-radius:50%;
+  background:linear-gradient(180deg,rgba(255,255,255,.11),rgba(255,255,255,0));
+  filter:blur(.5px);
+  pointer-events:none;
+}
+
+.roll-orb:active{
+  transform:translateX(-50%) scale(.96)!important;
+  box-shadow:
+    0 0 0 3px rgba(17,116,213,.24),
+    0 11px 24px rgba(0,0,0,.32),
+    0 0 22px rgba(29,147,255,.18),
+    inset 0 1px rgba(255,255,255,.08)!important;
+}
+
+.play-icon{
+  position:relative;
+  z-index:2;
+  margin-left:6px!important;
+  border-top-width:14px!important;
+  border-bottom-width:14px!important;
+  border-left-width:22px!important;
+  border-left-color:#58c4ff!important;
+  filter:drop-shadow(0 0 7px rgba(44,172,255,.52))!important;
+}
+
+.loading-dot{
+  position:relative;
+  z-index:2;
+}
+
+.roll-cost{
+  top:calc(100% + 10px)!important;
+  min-width:78px!important;
+  height:25px!important;
+  padding:0 11px!important;
+  border-color:rgba(72,153,231,.28)!important;
+  background:linear-gradient(180deg,rgba(10,27,47,.97),rgba(5,15,28,.97))!important;
+  color:#b9cbe0!important;
+  font-size:10px!important;
+  font-weight:800!important;
+  box-shadow:
+    inset 0 1px rgba(255,255,255,.035),
+    0 8px 18px rgba(0,0,0,.17)!important;
+}
+
+@media(max-height:760px){
+  .sell-current{
+    transform:translateY(-15px)!important;
+  }
+  .sell-current:active{
+    transform:translateY(-15px) scale(.975)!important;
+  }
+  .roll-orb{
+    width:102px!important;
+    height:102px!important;
+    bottom:calc(13.4% + var(--safe-bottom))!important;
+  }
+}
