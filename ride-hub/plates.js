@@ -176,8 +176,9 @@ function featuresFor(p){
 }
 
 function plate(p){
-  const region = String(p.r);
-  const rid = (p.id || key(p)).replace(/[^a-zA-Z0-9]/g, '').slice(-10);
+  const region=String(p.r);
+  const rid=(p.id||key(p)).replace(/[^a-zA-Z0-9]/g,'').slice(-10);
+  const combo=`${p.a}${p.n}${p.b}${p.c}`;
 
   return `
     <div class="plate-shell" aria-label="${key(p)}">
@@ -192,61 +193,62 @@ function plate(p){
         <defs>
           <linearGradient id="plateBg-${rid}" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stop-color="#fcfcfa"/>
-            <stop offset="52%" stop-color="#f4f4f0"/>
+            <stop offset="48%" stop-color="#f7f7f3"/>
             <stop offset="100%" stop-color="#ecece7"/>
           </linearGradient>
           <linearGradient id="plateEdge-${rid}" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#989c9f"/>
-            <stop offset="100%" stop-color="#6f7477"/>
+            <stop offset="0%" stop-color="#a3a6a8"/>
+            <stop offset="100%" stop-color="#6c7174"/>
           </linearGradient>
-          <radialGradient id="screw-${rid}" cx="35%" cy="30%" r="70%">
-            <stop offset="0%" stop-color="#f4f5f5"/>
-            <stop offset="48%" stop-color="#aab0b3"/>
-            <stop offset="100%" stop-color="#565c60"/>
+          <radialGradient id="screw-${rid}" cx="34%" cy="30%" r="72%">
+            <stop offset="0%" stop-color="#f3f4f4"/>
+            <stop offset="46%" stop-color="#abb0b3"/>
+            <stop offset="100%" stop-color="#555a5e"/>
           </radialGradient>
-          <filter id="emboss-${rid}" x="-5%" y="-6%" width="110%" height="118%">
-            <feDropShadow dx="0" dy=".6" stdDeviation=".26" flood-color="#000" flood-opacity=".30"/>
+          <filter id="emboss-${rid}" x="-4%" y="-8%" width="108%" height="120%">
+            <feDropShadow dx="0" dy=".75" stdDeviation=".25" flood-color="#000" flood-opacity=".24"/>
           </filter>
         </defs>
 
-        <!-- proportions matched to the supplied real plate reference -->
-        <rect x="1.5" y="1.5" width="517" height="109" rx="3.2"
+        <rect x="1.5" y="1.5" width="517" height="109" rx="3"
               fill="url(#plateBg-${rid})"
               stroke="url(#plateEdge-${rid})"
               stroke-width="2"/>
+
         <rect x="7.5" y="7.5" width="505" height="97" rx="2"
-              fill="none" stroke="#111314" stroke-width="3"/>
+              fill="none" stroke="#111314" stroke-width="2.6"/>
 
-        <!-- region block is intentionally wider, like the reference -->
-        <line x1="365" y1="7.5" x2="365" y2="104.5"
-              stroke="#111314" stroke-width="3"/>
+        <line x1="366" y1="7.5" x2="366" y2="104.5"
+              stroke="#111314" stroke-width="2.6"/>
 
-        <circle cx="18" cy="56" r="3.2"
-                fill="url(#screw-${rid})" stroke="#555b5f" stroke-width=".8"/>
-        <circle cx="502" cy="56" r="3.2"
-                fill="url(#screw-${rid})" stroke="#555b5f" stroke-width=".8"/>
-
-        <g class="plate-main-glyphs" filter="url(#emboss-${rid})">
-          <text x="31" y="84" class="gost-main gost-letter">${p.a}</text>
-          <text x="83" y="84" class="gost-main gost-digits">${p.n}</text>
-          <text x="229" y="84" class="gost-main gost-pair">${p.b}${p.c}</text>
-        </g>
+        <circle cx="18" cy="56" r="3.1"
+                fill="url(#screw-${rid})" stroke="#575c60" stroke-width=".75"/>
+        <circle cx="502" cy="56" r="3.1"
+                fill="url(#screw-${rid})" stroke="#575c60" stroke-width=".75"/>
 
         <text
-          x="441" y="59"
+          x="31" y="86"
+          class="gost-combination"
+          textLength="318"
+          lengthAdjust="spacing"
+          filter="url(#emboss-${rid})"
+        >${combo}</text>
+
+        <text
+          x="442" y="61"
           text-anchor="middle"
           class="gost-region"
           textLength="${region.length===3?82:55}"
           lengthAdjust="spacingAndGlyphs"
         >${region}</text>
 
-        <text x="397" y="90" text-anchor="middle" class="gost-rus">RUS</text>
+        <text x="412" y="91" text-anchor="middle" class="gost-rus">RUS</text>
 
         <g aria-label="Флаг России">
-          <rect x="429" y="72" width="51" height="22" rx=".5"
-                fill="#fff" stroke="#73787b" stroke-width=".8"/>
-          <rect x="429" y="79.33" width="51" height="7.33" fill="#245fbd"/>
-          <rect x="429" y="86.66" width="51" height="7.34" fill="#cf3035"/>
+          <rect x="441" y="73" width="49" height="21" rx=".4"
+                fill="#fff" stroke="#74797c" stroke-width=".75"/>
+          <rect x="441" y="80" width="49" height="7" fill="#235fbd"/>
+          <rect x="441" y="87" width="49" height="7" fill="#cf3035"/>
         </g>
       </svg>
     </div>
