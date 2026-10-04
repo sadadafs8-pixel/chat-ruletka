@@ -3,39 +3,49 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-  <meta name="theme-color" content="#090b10"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#06080d">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>НОМЕР</title>
-  <link rel="stylesheet" href="plates.css?v=3">
+  <link rel="stylesheet" href="plates.css?v=4">
   <script src="https://telegram.org/js/telegram-web-app.js" defer></script>
   <script src="plate-engine.js?v=1" defer></script>
-  <script src="plates.js?v=3" defer></script>
+  <script src="plates.js?v=4" defer></script>
 </head>
 <body>
   <div class="app" id="app">
-    <div class="ambient-glow" id="ambientGlow"></div>
-    <div class="noise"></div>
+    <div class="ambient-glow"></div>
+    <div class="grain"></div>
 
     <header class="topbar">
-      <button class="icon-button menu-button" id="menuBtn" aria-label="Меню">
+      <button class="menu-button" id="menuBtn" aria-label="Открыть меню">
         <span></span><span></span><span></span>
       </button>
-      <div class="balance">
-        <strong id="balanceValue">0 ₽</strong>
-        <span>0 S</span>
+
+      <div class="top-actions">
+        <div class="wallet">
+          <span>КОЛЛЕКЦИЯ</span>
+          <strong id="balanceValue">0 ₽</strong>
+        </div>
+        <button class="save-button" id="saveBtn" aria-label="Сохранить номер">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M6.5 3.5h11v17l-5.5-3.4-5.5 3.4z"/>
+          </svg>
+        </button>
       </div>
     </header>
 
-    <main class="machine">
-      <section class="previous-slot" id="previousSlot">
-        <div class="mini-plate-host" id="previousPlate"></div>
-        <div class="previous-meta">
+    <main class="hunt-screen">
+      <section class="previous-slot hidden" id="previousSlot">
+        <div class="previous-plate" id="previousPlate"></div>
+        <div class="previous-caption">
           <span id="previousTier">Обычный</span>
-          <b id="previousPrice">0 ₽</b>
+          <strong id="previousPrice">0 ₽</strong>
         </div>
       </section>
 
-      <section class="rarity-card" id="rarityCard">
-        <div class="rarity-line">
+      <section class="rarity-card">
+        <div class="rarity-head">
           <span id="rarityName">Обычный</span>
           <strong id="priceValue">0 ₽</strong>
         </div>
@@ -44,54 +54,69 @@
         </div>
       </section>
 
-      <section class="current-slot">
+      <section class="current-zone">
         <div class="plate-host" id="currentPlate"></div>
         <div class="features" id="featureList"></div>
       </section>
     </main>
 
-    <aside class="tool-rail">
-      <button id="saveBtn" aria-label="Добавить в коллекцию">＋</button>
-      <button id="settingsBtn" aria-label="Настройки">⚙</button>
-      <button id="collectionBtn" aria-label="Коллекция">◇</button>
-    </aside>
-
     <button class="roll-orb" id="rollBtn" aria-label="Выбить номер">
       <span class="play-icon"></span>
-      <span class="orb-dot"></span>
+      <span class="loading-dot"></span>
     </button>
 
     <button class="region-chip" id="regionBtn">
       <span class="flag-small"></span>
       <span id="regionLabel">Россия · все регионы</span>
-      <span class="chev">⌄</span>
+      <span class="chevron">⌄</span>
     </button>
 
     <div class="drawer-backdrop" id="drawerBackdrop"></div>
+
     <aside class="drawer" id="drawer" aria-hidden="true">
       <div class="drawer-head">
         <div>
           <p>НОМЕР</p>
-          <span>COLLECT / RUS</span>
+          <span>RUSSIAN PLATE HUNT</span>
         </div>
-        <button class="drawer-close" id="drawerClose">×</button>
+        <button class="drawer-close" id="drawerClose" aria-label="Закрыть">×</button>
       </div>
-      <div class="drawer-hero">
-        <span>Твой гараж</span>
-        <strong id="drawerOwned">0</strong>
-        <small>номеров в коллекции</small>
+
+      <div class="drawer-summary">
+        <div>
+          <span>В коллекции</span>
+          <strong id="drawerOwned">0</strong>
+        </div>
+        <div>
+          <span>Выбито</span>
+          <strong id="rollCounter">0</strong>
+        </div>
       </div>
+
       <nav class="drawer-nav">
-        <button data-action="hunt" class="active"><span>◉</span><b>Выбивать</b><small>Новые сочетания</small></button>
-        <button data-action="collection"><span>▦</span><b>Коллекция</b><small>Сохранённые номера</small></button>
-        <button data-action="rarity"><span>◇</span><b>Редкости</b><small>Шкала и правила</small></button>
-        <button data-action="region"><span>◎</span><b>Регион</b><small id="drawerRegion">Все регионы</small></button>
-        <button data-action="settings"><span>⚙</span><b>Настройки</b><small>Анимации и вибрация</small></button>
+        <button data-action="hunt" class="active">
+          <span class="nav-icon">◉</span>
+          <span><b>Выбивать</b><small>Главный экран</small></span>
+        </button>
+        <button data-action="collection">
+          <span class="nav-icon">▦</span>
+          <span><b>Коллекция</b><small>Сохранённые номера</small></span>
+        </button>
+        <button data-action="rarity">
+          <span class="nav-icon">◇</span>
+          <span><b>Редкости</b><small>Шкала и стоимость</small></span>
+        </button>
+        <button data-action="region">
+          <span class="nav-icon">◎</span>
+          <span><b>Регион</b><small id="drawerRegion">Все регионы</small></span>
+        </button>
+        <button data-action="settings">
+          <span class="nav-icon">⚙</span>
+          <span><b>Настройки</b><small>Анимация и вибрация</small></span>
+        </button>
       </nav>
-      <div class="drawer-foot">
-        <span id="rollCounter">0 выбито</span>
-        <span>v3.0</span>
-      </div>
+
+      <div class="drawer-foot">НОМЕР · v4.0</div>
     </aside>
 
     <section class="panel" id="panel" aria-hidden="true">
@@ -100,7 +125,7 @@
           <p id="panelEyebrow">НОМЕР</p>
           <h2 id="panelTitle">Коллекция</h2>
         </div>
-        <button id="panelClose">×</button>
+        <button id="panelClose" aria-label="Закрыть">×</button>
       </div>
       <div class="panel-body" id="panelBody"></div>
     </section>
