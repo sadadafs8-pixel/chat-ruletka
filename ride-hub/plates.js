@@ -191,69 +191,62 @@ function plate(p){
       >
         <defs>
           <linearGradient id="plateBg-${rid}" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#fbfbf9"/>
-            <stop offset="40%" stop-color="#f4f4f1"/>
+            <stop offset="0%" stop-color="#fcfcfa"/>
+            <stop offset="52%" stop-color="#f4f4f0"/>
             <stop offset="100%" stop-color="#ecece7"/>
           </linearGradient>
-
           <linearGradient id="plateEdge-${rid}" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#9da1a3"/>
-            <stop offset="100%" stop-color="#707577"/>
+            <stop offset="0%" stop-color="#989c9f"/>
+            <stop offset="100%" stop-color="#6f7477"/>
           </linearGradient>
-
           <radialGradient id="screw-${rid}" cx="35%" cy="30%" r="70%">
-            <stop offset="0%" stop-color="#f1f2f3"/>
-            <stop offset="45%" stop-color="#aeb3b6"/>
-            <stop offset="100%" stop-color="#585d61"/>
+            <stop offset="0%" stop-color="#f4f5f5"/>
+            <stop offset="48%" stop-color="#aab0b3"/>
+            <stop offset="100%" stop-color="#565c60"/>
           </radialGradient>
-
-          <filter id="emboss-${rid}" x="-5%" y="-5%" width="110%" height="115%">
-            <feDropShadow dx="0" dy="0.55" stdDeviation="0.28" flood-color="#000" flood-opacity=".28"/>
+          <filter id="emboss-${rid}" x="-5%" y="-6%" width="110%" height="118%">
+            <feDropShadow dx="0" dy=".6" stdDeviation=".26" flood-color="#000" flood-opacity=".30"/>
           </filter>
         </defs>
 
-        <rect x="1.5" y="1.5" width="517" height="109" rx="4"
+        <!-- proportions matched to the supplied real plate reference -->
+        <rect x="1.5" y="1.5" width="517" height="109" rx="3.2"
               fill="url(#plateBg-${rid})"
               stroke="url(#plateEdge-${rid})"
               stroke-width="2"/>
+        <rect x="7.5" y="7.5" width="505" height="97" rx="2"
+              fill="none" stroke="#111314" stroke-width="3"/>
 
-        <rect x="8.5" y="8.5" width="503" height="95" rx="2"
-              fill="none"
-              stroke="#111314"
-              stroke-width="3"/>
+        <!-- region block is intentionally wider, like the reference -->
+        <line x1="365" y1="7.5" x2="365" y2="104.5"
+              stroke="#111314" stroke-width="3"/>
 
-        <line x1="390" y1="8.5" x2="390" y2="103.5"
-              stroke="#111314"
-              stroke-width="3"/>
-
-        <circle cx="20" cy="56" r="3.5" fill="url(#screw-${rid})" stroke="#575c60" stroke-width=".8"/>
-        <circle cx="500" cy="56" r="3.5" fill="url(#screw-${rid})" stroke="#575c60" stroke-width=".8"/>
+        <circle cx="18" cy="56" r="3.2"
+                fill="url(#screw-${rid})" stroke="#555b5f" stroke-width=".8"/>
+        <circle cx="502" cy="56" r="3.2"
+                fill="url(#screw-${rid})" stroke="#555b5f" stroke-width=".8"/>
 
         <g class="plate-main-glyphs" filter="url(#emboss-${rid})">
-          <text x="35" y="85" class="gost-main gost-letter">${p.a}</text>
-          <text x="94" y="85" class="gost-main gost-digits">${p.n}</text>
-          <text x="258" y="85" class="gost-main gost-pair">${p.b}${p.c}</text>
+          <text x="31" y="84" class="gost-main gost-letter">${p.a}</text>
+          <text x="83" y="84" class="gost-main gost-digits">${p.n}</text>
+          <text x="229" y="84" class="gost-main gost-pair">${p.b}${p.c}</text>
         </g>
 
         <text
-          x="448" y="63"
+          x="441" y="59"
           text-anchor="middle"
           class="gost-region"
-          textLength="${region.length === 3 ? 74 : 49}"
+          textLength="${region.length===3?82:55}"
           lengthAdjust="spacingAndGlyphs"
         >${region}</text>
 
-        <text
-          x="421" y="91"
-          text-anchor="middle"
-          class="gost-rus"
-        >RUS</text>
+        <text x="397" y="90" text-anchor="middle" class="gost-rus">RUS</text>
 
         <g aria-label="Флаг России">
-          <rect x="449" y="73" width="40" height="20" rx=".6"
-                fill="#fff" stroke="#7b8083" stroke-width=".8"/>
-          <rect x="449" y="79.7" width="40" height="6.6" fill="#255fbd"/>
-          <rect x="449" y="86.3" width="40" height="6.7" fill="#cf3035"/>
+          <rect x="429" y="72" width="51" height="22" rx=".5"
+                fill="#fff" stroke="#73787b" stroke-width=".8"/>
+          <rect x="429" y="79.33" width="51" height="7.33" fill="#245fbd"/>
+          <rect x="429" y="86.66" width="51" height="7.34" fill="#cf3035"/>
         </g>
       </svg>
     </div>
