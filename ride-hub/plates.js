@@ -39,6 +39,7 @@ let state={
   redeemedTransfers:[],
   transferredOut:[],
   luckyRolls:0,
+  legendaryRolls:0,
   usedPromos:[]
 };
 
@@ -67,6 +68,7 @@ function load(){
       state.redeemedTransfers=Array.isArray(state.redeemedTransfers)?state.redeemedTransfers.slice(-1000):[];
       state.transferredOut=Array.isArray(state.transferredOut)?state.transferredOut.slice(-1000):[];
       state.luckyRolls=Math.max(0,Math.floor(Number(state.luckyRolls)||0));
+      state.legendaryRolls=Math.max(0,Math.floor(Number(state.legendaryRolls)||0));
       state.usedPromos=Array.isArray(state.usedPromos)?state.usedPromos.map(x=>String(x).toUpperCase()).slice(-100):[];
       if(state.region!=='all'&&!REGIONS.some(r=>r.code===state.region))state.region='all';
     }
@@ -590,18 +592,26 @@ function renderStats(){
 
   const luckyBadge=$('#luckyBadge');
   if(luckyBadge){
-    luckyBadge.textContent='УДАЧА ×'+state.luckyRolls;
-    luckyBadge.classList.toggle('hidden',state.luckyRolls<=0);
+    if(state.legendaryRolls>0){
+      luckyBadge.textContent='ЛЕГЕНДА ×'+state.legendaryRolls;
+      luckyBadge.classList.remove('hidden');
+    }else if(state.luckyRolls>0){
+      luckyBadge.textContent='УДАЧА ×'+state.luckyRolls;
+      luckyBadge.classList.remove('hidden');
+    }else{
+      luckyBadge.classList.add('hidden');
+    }
   }
 
   const promoStatus=$('#promoStatus');
   if(promoStatus){
-    promoStatus.textContent=state.luckyRolls>0
-      ?'Удачных прокруток: '+state.luckyRolls
-      :'Активировать бонус';
+    promoStatus.textContent=state.legendaryRolls>0
+      ?'Легендарных: '+state.legendaryRolls
+      :(state.luckyRolls>0?'Удачных: '+state.luckyRolls:'Активировать бонус');
   }
 
-  $('#app').classList.toggle('lucky-active',state.luckyRolls>0);
+  $('#app').classList.toggle('lucky-active',state.luckyRolls>0||state.legendaryRolls>0);
+  $('#app').classList.toggle('legendary-active',state.legendaryRolls>0);
 
   updateSave();
 }
@@ -676,6 +686,54 @@ function generateLucky(region){
   }
 
   return best||generate(region);
+}
+
+function generateLegendary(region){
+  const premiumSeries=[
+    ['А','М','Р'],
+    ['Е','К','Х'],
+    ['С','К','Р'],
+    ['А','М','О']
+  ];
+  const premiumNumbers=['001','007','777','888','999','555'];
+  const premiumRegions=['77','97','99','177','197','199','777','797','799'];
+
+  const candidates=[];
+
+  for(let i=0;i<24;i++){
+    const actualRegion=region==='all'
+      ?premiumRegions[Math.floor(Math.random()*premiumRegions.length)]
+      :region;
+
+    const base=generate(actualRegion);
+    const letters=premiumSeries[Math.floor(Math.random()*premiumSeries.length)];
+    const number=premiumNumbers[Math.floor(Math.random()*premiumNumbers.length)];
+
+    const candidate={
+      ...base,
+      a:letters[0],
+      b:letters[1],
+      c:letters[2],
+      n:number
+    };
+
+    const value=priceFor(candidate);
+
+    if(value>=700000){
+      candidates.push({candidate,value});
+    }
+  }
+
+  if(candidates.length){
+    candidates.sort((a,b)=>b.value-a.value);
+    const pool=candidates.slice(0,Math.min(10,candidates.length));
+    return pool[Math.floor(Math.random()*pool.length)].candidate;
+  }
+
+  // Hard fallback that is always legendary in the current economy.
+  const fallbackRegion=region==='all'?'77':region;
+  const fallback=generate(fallbackRegion);
+  return {...fallback,a:'А',b:'М',c:'Р',n:'777'};
 }
 
 const SLOT_LETTERS=['А','В','Е','К','М','Н','О','Р','С','Т','У','Х'];
@@ -798,14 +856,18 @@ async function roll(){
   setTierVisual(0);
   updateSellButton();
 
-  const luckyRoll=state.luckyRolls>0;
-  const final=luckyRoll?generateLucky(state.region):generate(state.region);
+  const legendaryRoll=state.legendaryRolls>0;
+  const luckyRoll=!legendaryRoll&&state.luckyRolls>0;
+  const final=legendaryRoll
+    ?generateLegendary(state.region)
+    :(luckyRoll?generateLucky(state.region):generate(state.region));
 
   await animateSequentialPlate(final,reduced);
 
   state.current=final;
   state.rolls++;
-  if(luckyRoll)state.luckyRolls=Math.max(0,state.luckyRolls-1);
+  if(legendaryRoll)state.legendaryRolls=Math.max(0,state.legendaryRolls-1);
+  else if(luckyRoll)state.luckyRolls=Math.max(0,state.luckyRolls-1);
   state.history=[final,...state.history].slice(0,20);
   persist();
 
@@ -1077,7 +1139,7 @@ function renderPromo(){
         <span>✦</span>
         <div>
           <b>Супер-удачные прокрутки</b>
-          <small>SADA1 даёт +10, SADA2 даёт +100 супер-удачных прокруток. Оба промокода можно использовать сколько угодно раз.</small>
+          <small>SADA1 даёт +10 удачных прокруток. SADA2 даёт +100 легендарных прокруток — только номера стоимостью от 700 000 ₽. Оба кода можно использовать сколько угодно раз.</small>
         </div>
       </div>
       <input
@@ -1091,8 +1153,12 @@ function renderPromo(){
         Активировать
       </button>
       <div class="promo-remaining">
-        <span>Осталось удачных прокруток</span>
+        <span>Удачные SADA1</span>
         <strong>${state.luckyRolls}</strong>
+      </div>
+      <div class="promo-remaining promo-legendary">
+        <span>Легендарные SADA2</span>
+        <strong>${state.legendaryRolls}</strong>
       </div>
     </div>
   `;
@@ -1100,23 +1166,26 @@ function renderPromo(){
   $('#activatePromo').onclick=()=>{
     const code=String($('#promoInput')?.value||'').trim().toUpperCase();
 
-    const promoRewards={
-      SADA1:10,
-      SADA2:100
-    };
-    const reward=promoRewards[code];
-
-    if(!reward){
+    if(code!=='SADA1'&&code!=='SADA2'){
       showToast('Промокод не найден');
       return;
     }
 
-    state.luckyRolls+=reward;
+    if(code==='SADA2'){
+      state.legendaryRolls+=100;
+    }else{
+      state.luckyRolls+=10;
+    }
+
     state.usedPromos=[...state.usedPromos,code].slice(-100);
     persist();
     renderStats();
     haptic('success');
-    showToast(code+' · +'+reward+' удачных прокруток');
+    showToast(
+      code==='SADA2'
+        ?'SADA2 · +100 легендарных прокруток'
+        :'SADA1 · +10 удачных прокруток'
+    );
     $('#promoInput').value='';
     renderPromo();
   };
