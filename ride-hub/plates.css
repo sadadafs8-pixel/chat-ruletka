@@ -10,12 +10,11 @@
   --safe-bottom:env(safe-area-inset-bottom,0px);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050609;font-family:Inter,-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;color:var(--text)}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050609;font-family:Inter,-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;color:var(--text);overscroll-behavior:none;-webkit-overflow-scrolling:auto} html{position:fixed;inset:0} body{position:fixed;inset:0;touch-action:manipulation}
 button,input{font:inherit}
 button{color:inherit}
-body{overscroll-behavior:none}
 .app{
-  width:min(100vw,560px);height:100dvh;min-height:620px;margin:0 auto;position:relative;overflow:hidden;
+  position:fixed;inset:0;left:0;right:0;width:min(100vw,560px);height:100dvh;min-height:0;margin:0 auto;overflow:hidden;touch-action:manipulation;
   background:
     linear-gradient(180deg,#0b0d13 0%,#090b10 48%,#07080c 100%);
   isolation:isolate;
@@ -122,7 +121,9 @@ body{overscroll-behavior:none}
 .region-option{border:0;border-radius:11px;background:#11141a;color:#c7ccd2;padding:12px;text-align:left;display:flex;justify-content:space-between;font-size:11px}
 .region-option small{color:#68717d}.region-option.selected{background:#122337;color:#4ba8ff}
 .toast{position:absolute;z-index:50;left:50%;bottom:calc(75px + var(--safe-bottom));transform:translate(-50%,10px);background:#171b21;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:9px 12px;font-size:10px;color:#d7dbe0;opacity:0;pointer-events:none;transition:.25s;white-space:nowrap;max-width:90%;overflow:hidden;text-overflow:ellipsis}.toast.visible{opacity:1;transform:translate(-50%,0)}
-@media (max-height:700px){
- .machine{padding-top:17vh}.rarity-card{top:37%}.current-slot{top:46%}.features{margin-top:8px;min-height:70px}.roll-orb{bottom:calc(88px + var(--safe-bottom))}.region-chip{bottom:calc(15px + var(--safe-bottom))}
+@media (max-height:760px){
+ .machine{padding-top:calc(13vh + var(--safe-top))}.previous-slot{transform:scale(.72)}.rarity-card{top:34%}.current-slot{top:42%}.plate{height:68px}.plate-main .letter{font-size:31px}.plate-main .digits{font-size:38px}.features{margin-top:7px;min-height:58px;font-size:9px}.tool-rail{top:57%}.roll-orb{bottom:calc(82px + var(--safe-bottom))}.region-chip{bottom:calc(16px + var(--safe-bottom))}
 }
 @media (min-width:561px){body{background:#020305}.app{box-shadow:0 0 80px rgba(0,0,0,.65)}}
+/* v3: app-shell lock — the main hunt screen never scrolls */
+body:not(.panel-scroll){overflow:hidden!important}.machine,.topbar,.tool-rail,.roll-orb,.region-chip{user-select:none;-webkit-user-select:none}.panel-body{touch-action:pan-y}.drawer{touch-action:none}
