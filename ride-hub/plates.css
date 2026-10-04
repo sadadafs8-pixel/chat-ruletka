@@ -382,3 +382,97 @@ button,input{font:inherit} button{color:inherit}
   .region-chip{height:40px;bottom:calc(2.7% + var(--safe-bottom));font-size:11px}
 }
 @media (min-width:561px){body{background:#000}.app{box-shadow:0 0 90px rgba(0,0,0,.7)}}
+
+/* ===== v8 economy + ownership + exact SVG plate ===== */
+.wallet{width:132px}
+.wallet span{color:#8ea1bb}
+.wallet strong{font-size:16px;color:#f0f6ff}
+
+.previous-slot{
+  top:calc(clamp(88px,12.6vh,108px) + var(--safe-top)) !important;
+  width:min(43vw,230px) !important;
+}
+.rarity-card{
+  top:calc(clamp(190px,25.4vh,225px) + var(--safe-top)) !important;
+}
+.current-zone{
+  top:calc(clamp(286px,38.2vh,334px) + var(--safe-top)) !important;
+}
+
+.plate-shell{width:100%;display:flex;justify-content:center}
+.plate-svg{
+  display:block;width:100%;height:auto;aspect-ratio:520/112;
+  filter:drop-shadow(0 9px 14px rgba(0,0,0,.38));
+}
+.plate-face,.plate-main-flat,.plate-side-flat,.plate-letter-flat,.plate-digits-flat,.plate-region-flat,
+.plate-country-flat,.plate-flag{display:none!important}
+
+.previous-slot .plate-svg{
+  filter:drop-shadow(0 5px 9px rgba(0,0,0,.34));
+}
+.collection-card .plate-svg{
+  width:100%;max-width:300px;filter:drop-shadow(0 4px 8px rgba(0,0,0,.28));
+}
+
+.roll-orb{overflow:visible}
+.roll-cost{
+  position:absolute;left:50%;top:calc(100% + 9px);transform:translateX(-50%);
+  min-width:72px;height:24px;padding:0 9px;border-radius:999px;
+  border:1px solid rgba(45,148,255,.28);
+  background:rgba(5,18,34,.9);color:#a8c7e9;font-size:10px;font-weight:750;
+  display:flex;align-items:center;justify-content:center;white-space:nowrap;
+  box-shadow:0 0 18px rgba(0,120,255,.09);
+}
+.region-chip{bottom:calc(3.1% + var(--safe-bottom))!important}
+.roll-orb{bottom:calc(14.2% + var(--safe-bottom))!important}
+
+.collection-meta small{
+  display:block;margin-top:4px;color:#51657d;font-size:7px;max-width:84px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+
+.detail-plate{padding:8px 0 18px}
+.ownership-card{
+  padding:16px;border:1px solid color-mix(in srgb,var(--detail-tier) 25%,rgba(72,137,211,.16));
+  border-radius:18px;background:linear-gradient(180deg,#0a1726,#07111d);
+}
+.ownership-row{
+  display:flex;align-items:center;justify-content:space-between;padding:10px 0;
+  border-bottom:1px solid rgba(255,255,255,.05);
+}
+.ownership-row span{color:#7589a2;font-size:11px}
+.ownership-row strong{color:var(--detail-tier);font-size:13px}
+.ownership-id{padding:14px 0}
+.ownership-id span{display:block;color:#7589a2;font-size:10px;margin-bottom:6px}
+.ownership-id code{
+  display:block;overflow-wrap:anywhere;color:#dce9f9;font-size:10px;line-height:1.5;
+}
+.ownership-primary,.ownership-secondary,.ownership-copy{
+  width:100%;height:46px;border-radius:13px;margin-top:9px;font-weight:750;font-size:12px;
+}
+.ownership-primary{
+  border:1px solid rgba(29,151,255,.42);background:linear-gradient(180deg,#0d70c6,#075292);color:#fff;
+}
+.ownership-secondary{
+  border:1px solid rgba(72,137,211,.22);background:#0b1827;color:#c7d6e8;
+}
+.ownership-copy{
+  border:1px solid rgba(72,137,211,.18);background:#091421;color:#8fa4be;
+}
+.transfer-box{
+  padding:18px;border:1px solid rgba(72,137,211,.18);border-radius:18px;background:#091421;
+}
+.transfer-box h3{margin:0;color:#e4eefb;font-size:16px}
+.transfer-box p{margin:8px 0 14px;color:#74869d;font-size:10px;line-height:1.5}
+.transfer-box textarea{
+  width:100%;min-height:130px;resize:none;padding:12px;border:1px solid rgba(72,137,211,.2);
+  border-radius:12px;background:#050d17;color:#c8d8ec;font-size:9px;line-height:1.45;outline:none;
+}
+
+@media(max-height:760px){
+  .previous-slot{top:calc(clamp(76px,11.2vh,92px) + var(--safe-top))!important;width:min(40vw,205px)!important}
+  .rarity-card{top:calc(clamp(166px,23.8vh,188px) + var(--safe-top))!important}
+  .current-zone{top:calc(clamp(252px,35.6vh,286px) + var(--safe-top))!important}
+  .roll-orb{bottom:calc(13.8% + var(--safe-bottom))!important}
+  .region-chip{bottom:calc(2.8% + var(--safe-bottom))!important}
+}
