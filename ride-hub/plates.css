@@ -1622,3 +1622,171 @@ button,input{font:inherit} button{color:inherit}
     bottom:calc(13.4% + var(--safe-bottom))!important;
   }
 }
+
+
+/* ===== v9.8 separated actions + collection ===== */
+/* Fixed action rail: guaranteed gap above the roll button on mobile. */
+.current-actions{
+  position:fixed!important;
+  z-index:16!important;
+  left:50%!important;
+  bottom:calc(30.8% + var(--safe-bottom))!important;
+  width:min(88vw,430px)!important;
+  height:44px!important;
+  transform:translateX(-50%)!important;
+  display:grid!important;
+  grid-template-columns:1fr 1.12fr!important;
+  gap:10px!important;
+  pointer-events:auto!important;
+  opacity:1!important;
+  visibility:visible!important;
+  transition:opacity .18s ease,transform .18s ease!important;
+}
+
+.current-actions.hidden{
+  opacity:0!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+  transform:translateX(-50%) translateY(5px)!important;
+}
+
+.collection-current,
+.sell-current{
+  position:relative!important;
+  width:100%!important;
+  min-width:0!important;
+  height:44px!important;
+  margin:0!important;
+  padding:0 14px!important;
+  transform:none!important;
+  border-radius:15px!important;
+  border:1px solid rgba(72,151,229,.30)!important;
+  background:
+    linear-gradient(180deg,rgba(13,35,59,.97),rgba(5,18,33,.98))!important;
+  box-shadow:
+    inset 0 1px rgba(255,255,255,.045),
+    0 9px 24px rgba(0,0,0,.19)!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:8px!important;
+  color:#bacbdd!important;
+  pointer-events:auto!important;
+  transition:transform .12s ease,border-color .16s ease,background .16s ease!important;
+}
+
+.collection-current:active,
+.sell-current:active{
+  transform:scale(.975)!important;
+}
+
+.collection-current{
+  font-size:11px!important;
+  font-weight:750!important;
+  white-space:nowrap!important;
+}
+
+.collection-current-icon{
+  width:18px;
+  height:18px;
+  border-radius:6px;
+  display:grid;
+  place-items:center;
+  flex:0 0 auto;
+  font-size:15px;
+  line-height:1;
+  color:#72c5ff;
+  background:rgba(37,139,229,.10);
+  border:1px solid rgba(79,172,249,.20);
+}
+
+.collection-current.saved{
+  border-color:rgba(73,195,142,.34)!important;
+  background:
+    linear-gradient(180deg,rgba(12,46,47,.97),rgba(5,26,31,.98))!important;
+  color:#bdebd7!important;
+}
+
+.collection-current.saved .collection-current-icon{
+  color:#63e5a9;
+  border-color:rgba(81,218,160,.24);
+  background:rgba(40,180,118,.10);
+}
+
+.collection-current.saved .collection-current-icon::before{
+  content:"✓";
+}
+
+.collection-current.saved .collection-current-icon{
+  font-size:0;
+}
+
+.collection-current.saved .collection-current-icon::before{
+  font-size:12px;
+}
+
+.sell-current span{
+  font-size:11px!important;
+  font-weight:700!important;
+  white-space:nowrap!important;
+}
+
+.sell-current strong{
+  font-size:12px!important;
+  font-weight:850!important;
+  white-space:nowrap!important;
+  color:#f0f6ff!important;
+}
+
+/* Roll button sits lower; action rail can never overlap it. */
+.roll-orb{
+  bottom:calc(12.2% + var(--safe-bottom))!important;
+  width:104px!important;
+  height:104px!important;
+}
+
+.roll-cost{
+  top:calc(100% + 8px)!important;
+}
+
+@media(max-width:390px){
+  .current-actions{
+    width:min(91vw,380px)!important;
+    grid-template-columns:.94fr 1.06fr!important;
+    gap:8px!important;
+    bottom:calc(30.4% + var(--safe-bottom))!important;
+  }
+
+  .collection-current,
+  .sell-current{
+    height:42px!important;
+    padding:0 10px!important;
+  }
+
+  .collection-current,
+  .sell-current span{
+    font-size:10px!important;
+  }
+
+  .sell-current strong{
+    font-size:11px!important;
+  }
+}
+
+@media(max-height:760px){
+  .current-actions{
+    bottom:calc(29.8% + var(--safe-bottom))!important;
+    height:40px!important;
+  }
+
+  .collection-current,
+  .sell-current{
+    height:40px!important;
+  }
+
+  .roll-orb{
+    width:96px!important;
+    height:96px!important;
+    bottom:calc(11.8% + var(--safe-bottom))!important;
+  }
+}
