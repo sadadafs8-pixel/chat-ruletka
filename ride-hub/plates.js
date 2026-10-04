@@ -9,11 +9,11 @@ const ROLL_COST=1000;
 const START_BALANCE=1000000;
 
 const DISPLAY_TIERS=[
-  {name:'Обычный',color:'#8b94a2',min:15000,max:79999,desc:'Обычная рыночная комбинация без сильного рисунка.'},
-  {name:'Необычный',color:'#35e982',min:80000,max:249999,desc:'Повторы, зеркала, ровные сотни и другие заметные сочетания.'},
-  {name:'Редкий',color:'#318dff',min:250000,max:799999,desc:'Тройки цифр, первые номера, одинаковые буквы или сильное совпадение.'},
-  {name:'Эпический',color:'#a15aff',min:800000,max:2499999,desc:'Сильная комбинация цифр и букв, особенно в дорогом регионе.'},
-  {name:'Легендарный',color:'#f0a51a',min:2500000,max:30000000,desc:'Топовые сочетания, столичные коды и редкие спецсерии.'}
+  {name:'Обычный',color:'#8b94a2',min:2000,max:19999,desc:'Обычный номер без заметной красивой комбинации. Почти не имеет коллекционной наценки.'},
+  {name:'Необычный',color:'#35e982',min:20000,max:79999,desc:'Небольшой рисунок: повтор, зеркало, последовательность или аккуратное совпадение.'},
+  {name:'Редкий',color:'#318dff',min:80000,max:299999,desc:'Сильная комбинация цифр или букв, первые номера и ровные значения.'},
+  {name:'Эпический',color:'#a15aff',min:300000,max:1499999,desc:'Тройки, одинаковые буквы, сильные сочетания и дорогие региональные коды.'},
+  {name:'Легендарный',color:'#f0a51a',min:1500000,max:30000000,desc:'Топовые сочетания и редкие спецсерии.'}
 ];
 
 const storageKey='nomer-v7-'+(tg?.initDataUnsafe?.user?.id||'local');
@@ -131,30 +131,15 @@ function parseTransferCode(code){
 function regionPriceMultiplier(code,base){
   const r=String(code);
 
-  if(r==='77'){
-    if(base>=250000)return 4.0;
-    return 1.75;
-  }
+  // Region should matter mainly for already valuable combinations.
+  if(base<50000)return 1;
 
-  if(['97','99','177','197','199'].includes(r)){
-    return base>=250000?2.15:1.42;
-  }
-
-  if(r==='777'){
-    return base>=250000?1.65:1.35;
-  }
-
-  if(['797','799','977','997'].includes(r)){
-    return base>=250000?1.5:1.28;
-  }
-
-  if(['50','90','150','190','250','550','750','790'].includes(r)){
-    return base>=250000?1.35:1.18;
-  }
-
-  if(['78','98','178','198'].includes(r)){
-    return base>=250000?1.38:1.20;
-  }
+  if(r==='77')return base>=300000?2.0:1.25;
+  if(['97','99','177','197','199'].includes(r))return base>=300000?1.55:1.18;
+  if(r==='777')return base>=300000?1.45:1.15;
+  if(['797','799','977','997'].includes(r))return base>=300000?1.35:1.12;
+  if(['50','90','150','190','250','550','750','790'].includes(r))return base>=300000?1.22:1.08;
+  if(['78','98','178','198'].includes(r))return base>=300000?1.25:1.10;
 
   return 1;
 }
@@ -177,69 +162,75 @@ function marketPriceFor(p){
   const regionDigits=String(Number(region));
   const matchesRegion=regionDigits&&(n===regionDigits.padStart(3,'0')||n.endsWith(regionDigits));
 
-  let price=35000;
+  // Most random plates are basically worthless in a collector market.
+  let price=3500+((h%7)*500);
 
-  if(n==='001') price=750000;
-  else if(firstTen) price=310000;
-  else if(sameDigits){
-    const triplePrices={
-      '111':420000,
-      '222':360000,
-      '333':380000,
-      '444':340000,
-      '555':420000,
-      '666':280000,
-      '777':700000,
-      '888':480000,
-      '999':520000,
-      '000':650000
-    };
-    price=triplePrices[n]||395000;
-  }else if(roundHundred){
-    price=150000;
-  }else if(sequence){
-    price=145000;
-  }else if(mirror){
-    price=100000;
-  }else if(repeatedDigits){
-    price=75000;
+  if(repeatedDigits)price=9000+((h%7)*1000);
+  if(mirror)price=30000+((h%7)*4000);
+  if(sequence)price=45000+((h%7)*5000);
+  if(roundHundred)price=60000+((h%7)*7000);
+
+  if(firstTen){
+    price=120000+((h%7)*18000);
   }
 
-  if(matchesRegion){
-    price=Math.max(price,220000);
-    price*=1.12;
+  if(n==='001'){
+    price=320000+((h%7)*35000);
+  }
+
+  if(sameDigits){
+    const triplePrices={
+      '111':170000,
+      '222':150000,
+      '333':160000,
+      '444':140000,
+      '555':180000,
+      '666':130000,
+      '777':420000,
+      '888':220000,
+      '999':240000,
+      '000':300000
+    };
+    price=triplePrices[n]||170000;
+  }
+
+  // Two matching letters alone should barely matter.
+  if(twoSameLetters&&!sameLetters){
+    price+=6000;
   }
 
   if(sameLetters){
-    if(price>=250000)price*=1.55;
-    else price=Math.max(price,500000);
-  }else if(twoSameLetters){
-    price+=70000;
+    price=Math.max(price,180000);
+  }
+
+  if(matchesRegion){
+    price=Math.max(price,25000);
+    if(price>=80000)price*=1.08;
   }
 
   const specialSeries={
-    'АМР':5000000,
-    'ЕКХ':2600000,
-    'СКР':2200000,
-    'АМО':1800000,
-    'АММ':850000
+    'АМР':4200000,
+    'ЕКХ':1800000,
+    'СКР':1400000,
+    'АМО':900000,
+    'АММ':450000
   };
 
   if(specialSeries[letters]){
     price=Math.max(price,specialSeries[letters]);
   }
 
-  let multiplier=regionPriceMultiplier(region,price);
+  price*=regionPriceMultiplier(region,price);
 
-  if(n==='777'&&region==='77')multiplier*=1.45;
-  if(n==='001'&&region==='777')multiplier*=1.08;
+  if(n==='777'&&region==='77')price*=1.35;
+  if(n==='001'&&region==='77')price*=1.20;
 
-  price*=multiplier;
-
-  const variance=.90+((h%1000)/999)*.20;
+  const variance=.94+((h%1000)/999)*.12;
   price*=variance;
 
-  if(price<100000){
+  if(price<20000){
+    price=Math.round(price/500)*500;
+  }else if(price<100000){
     price=Math.round(price/1000)*1000;
   }else if(price<1000000){
     price=Math.round(price/5000)*5000;
@@ -249,7 +240,7 @@ function marketPriceFor(p){
     price=Math.round(price/50000)*50000;
   }
 
-  return Math.max(15000,Math.min(30000000,price));
+  return Math.max(2000,Math.min(30000000,price));
 }
 
 function priceFor(p){
@@ -258,10 +249,10 @@ function priceFor(p){
 
 function displayTier(p){
   const value=priceFor(p);
-  if(value<80000)return 0;
-  if(value<250000)return 1;
-  if(value<800000)return 2;
-  if(value<2500000)return 3;
+  if(value<20000)return 0;
+  if(value<80000)return 1;
+  if(value<300000)return 2;
+  if(value<1500000)return 3;
   return 4;
 }
 
@@ -986,7 +977,7 @@ function renderRarity(){
         <p>${d.desc}</p>
       </div>
     `).join('')+
-    '<div class="tier-item" style="--c:#f0a51a"><div class="tier-top"><b>Оценка рынка</b><strong>до 30 000 000 ₽</strong></div><p>Цена рассчитывается по сочетанию цифр, букв, региону и редким сериям. Это ориентир по рынку объявлений, а не гарантированная цена сделки.</p></div></div>';
+    '<div class="tier-item" style="--c:#f0a51a"><div class="tier-top"><b>Оценка рынка</b><strong>до 30 000 000 ₽</strong></div><p>Обычные номера стоят почти ничего. Высокая цена появляется только у реально сильных комбинаций и редких серий.</p></div></div>';
 }
 
 function renderSettings(){
