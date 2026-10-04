@@ -37,7 +37,9 @@ let state={
   reduced:false,
   balance:START_BALANCE,
   redeemedTransfers:[],
-  transferredOut:[]
+  transferredOut:[],
+  luckyRolls:0,
+  usedPromos:[]
 };
 
 let busy=false;
@@ -64,6 +66,8 @@ function load(){
       state.balance=Number.isFinite(Number(state.balance))?Math.max(0,Math.round(Number(state.balance))):START_BALANCE;
       state.redeemedTransfers=Array.isArray(state.redeemedTransfers)?state.redeemedTransfers.slice(-1000):[];
       state.transferredOut=Array.isArray(state.transferredOut)?state.transferredOut.slice(-1000):[];
+      state.luckyRolls=Math.max(0,Math.floor(Number(state.luckyRolls)||0));
+      state.usedPromos=Array.isArray(state.usedPromos)?state.usedPromos.map(x=>String(x).toUpperCase()).slice(-100):[];
       if(state.region!=='all'&&!REGIONS.some(r=>r.code===state.region))state.region='all';
     }
   }catch{}
@@ -584,6 +588,21 @@ function renderStats(){
     ?'Все регионы'
     :state.region+' · '+regionName(state.region);
 
+  const luckyBadge=$('#luckyBadge');
+  if(luckyBadge){
+    luckyBadge.textContent='УДАЧА ×'+state.luckyRolls;
+    luckyBadge.classList.toggle('hidden',state.luckyRolls<=0);
+  }
+
+  const promoStatus=$('#promoStatus');
+  if(promoStatus){
+    promoStatus.textContent=state.luckyRolls>0
+      ?'Удачных прокруток: '+state.luckyRolls
+      :(state.usedPromos.includes('SADA1')?'SADA1 использован':'Активировать бонус');
+  }
+
+  $('#app').classList.toggle('lucky-active',state.luckyRolls>0);
+
   updateSave();
 }
 
@@ -629,6 +648,35 @@ function easeOutCubic(x){
   return 1-Math.pow(1-x,3);
 }
 
+
+function generateLucky(region){
+  const winners=[];
+  let best=null;
+  let bestValue=-1;
+
+  for(let i=0;i<1400;i++){
+    const candidate=generate(region);
+    const value=priceFor(candidate);
+
+    if(value>bestValue){
+      best=candidate;
+      bestValue=value;
+    }
+
+    if(value>=250000){
+      winners.push(candidate);
+      if(winners.length>=14)break;
+    }
+  }
+
+  if(winners.length){
+    winners.sort((a,b)=>priceFor(b)-priceFor(a));
+    const pool=winners.slice(0,Math.min(8,winners.length));
+    return pool[Math.floor(Math.random()*pool.length)];
+  }
+
+  return best||generate(region);
+}
 
 const SLOT_LETTERS=['А','В','Е','К','М','Н','О','Р','С','Т','У','Х'];
 
@@ -750,12 +798,14 @@ async function roll(){
   setTierVisual(0);
   updateSellButton();
 
-  const final=generate(state.region);
+  const luckyRoll=state.luckyRolls>0;
+  const final=luckyRoll?generateLucky(state.region):generate(state.region);
 
   await animateSequentialPlate(final,reduced);
 
   state.current=final;
   state.rolls++;
+  if(luckyRoll)state.luckyRolls=Math.max(0,state.luckyRolls-1);
   state.history=[final,...state.history].slice(0,20);
   persist();
 
@@ -1016,6 +1066,66 @@ function renderRarity(){
     '<div class="tier-item" style="--c:#f0a51a"><div class="tier-top"><b>Оценка рынка</b><strong>до 30 000 000 ₽</strong></div><p>Обычные номера стоят почти ничего. Высокая цена появляется только у реально сильных комбинаций и редких серий.</p></div></div>';
 }
 
+function renderPromo(){
+  openPanel('Промокод','БОНУС');
+
+  const used=state.usedPromos.includes('SADA1');
+  const body=$('#panelBody');
+
+  body.innerHTML=`
+    <div class="promo-box">
+      <div class="promo-hero">
+        <span>✦</span>
+        <div>
+          <b>Супер-удачные прокрутки</b>
+          <small>Промокод даёт 10 прокруток с гарантированно сильными комбинациями.</small>
+        </div>
+      </div>
+      <input
+        class="region-search promo-input"
+        id="promoInput"
+        placeholder="Введи промокод"
+        autocomplete="off"
+        autocapitalize="characters"
+        value="${used?'SADA1':''}"
+        ${used?'disabled':''}
+      >
+      <button class="ownership-primary" id="activatePromo" ${used?'disabled':''}>
+        ${used?'Промокод уже использован':'Активировать'}
+      </button>
+      <div class="promo-remaining">
+        <span>Осталось удачных прокруток</span>
+        <strong>${state.luckyRolls}</strong>
+      </div>
+    </div>
+  `;
+
+  const button=$('#activatePromo');
+  if(!button||used)return;
+
+  button.onclick=()=>{
+    const code=String($('#promoInput')?.value||'').trim().toUpperCase();
+
+    if(code!=='SADA1'){
+      showToast('Промокод не найден');
+      return;
+    }
+
+    if(state.usedPromos.includes(code)){
+      showToast('Промокод уже использован');
+      return;
+    }
+
+    state.usedPromos.push(code);
+    state.luckyRolls+=10;
+    persist();
+    renderStats();
+    haptic('success');
+    showToast('SADA1 активирован · +10 удачных прокруток');
+    renderPromo();
+  };
+}
+
 function renderSettings(){
   openPanel('Настройки','ИНТЕРФЕЙС');
 
@@ -1105,6 +1215,7 @@ $$('.drawer-nav [data-action]').forEach(b=>{
     if(action==='rarity') renderRarity();
     if(action==='region') renderRegion();
     if(action==='receive') renderReceive();
+    if(action==='promo') renderPromo();
     if(action==='settings') renderSettings();
   };
 });
