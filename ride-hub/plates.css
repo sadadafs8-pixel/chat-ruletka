@@ -1989,3 +1989,35 @@ button,input{font:inherit} button{color:inherit}
   color:#ffd467;
   font-size:18px;
 }
+
+
+/* ===== v10.4 SADA2 legendary rolls ===== */
+.app.legendary-active .roll-orb{
+  border-color:rgba(255,184,55,.84)!important;
+  box-shadow:
+    0 0 0 4px rgba(255,164,31,.18),
+    0 0 0 8px rgba(255,120,22,.07),
+    0 18px 34px rgba(0,0,0,.34),
+    0 0 34px rgba(255,153,30,.24),
+    inset 0 1px rgba(255,255,255,.11),
+    inset 0 -13px 28px rgba(0,0,0,.28)!important;
+}
+
+.app.legendary-active .lucky-badge{
+  border-color:rgba(255,179,45,.72);
+  background:linear-gradient(180deg,rgba(112,59,8,.98),rgba(54,24,3,.98));
+  color:#ffd26a;
+  box-shadow:
+    0 0 18px rgba(255,142,25,.24),
+    inset 0 1px rgba(255,255,255,.10);
+}
+
+.promo-legendary{
+  border-color:rgba(255,183,58,.20);
+  background:
+    linear-gradient(180deg,rgba(38,26,8,.90),rgba(18,13,5,.94));
+}
+
+.promo-legendary strong{
+  color:#ffbf4a;
+}
