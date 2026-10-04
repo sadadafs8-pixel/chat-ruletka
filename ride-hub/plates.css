@@ -751,3 +751,115 @@ button,input{font:inherit} button{color:inherit}
   .plate-host{width:90%!important}
   .previous-slot{width:min(36vw,182px)!important}
 }
+
+
+/* ===== v8.6 responsive price badges and top alignment ===== */
+/* Small current-number area: plate stays compact, value badge grows with content */
+.previous-slot{
+  width:min(58vw,292px)!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+}
+
+.previous-plate{
+  width:min(39vw,198px)!important;
+  flex:0 0 auto;
+}
+
+.previous-caption{
+  width:max-content!important;
+  min-width:min(39vw,198px)!important;
+  max-width:min(58vw,292px)!important;
+  height:30px!important;
+  margin:7px auto 0!important;
+  padding:0 15px!important;
+  gap:18px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  border-radius:16px!important;
+  overflow:visible!important;
+}
+
+.previous-caption span,
+.previous-caption strong{
+  display:block!important;
+  flex:0 0 auto!important;
+  margin:0!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+  word-break:keep-all!important;
+  overflow-wrap:normal!important;
+}
+
+.previous-caption span{
+  font-size:10px!important;
+  font-weight:700!important;
+}
+
+.previous-caption strong{
+  font-size:10px!important;
+  font-weight:800!important;
+  letter-spacing:.01em!important;
+  font-variant-numeric:tabular-nums!important;
+  text-align:right!important;
+}
+
+/* Main rarity price also never wraps */
+.rarity-head{
+  gap:16px!important;
+}
+.rarity-head span{
+  flex:0 0 auto!important;
+  white-space:nowrap!important;
+}
+.rarity-head strong{
+  min-width:0!important;
+  white-space:nowrap!important;
+  word-break:keep-all!important;
+  font-variant-numeric:tabular-nums!important;
+  text-align:right!important;
+}
+
+/* Slightly cleaner vertical rhythm */
+.rarity-card{
+  top:calc(clamp(198px,25.9vh,232px) + var(--safe-top))!important;
+}
+.current-zone{
+  top:calc(clamp(292px,38.5vh,340px) + var(--safe-top))!important;
+}
+
+@media(max-width:390px){
+  .previous-slot{
+    width:min(62vw,282px)!important;
+  }
+  .previous-plate{
+    width:min(40vw,184px)!important;
+  }
+  .previous-caption{
+    min-width:min(40vw,184px)!important;
+    max-width:min(62vw,282px)!important;
+    padding:0 12px!important;
+    gap:12px!important;
+  }
+  .previous-caption span,
+  .previous-caption strong{
+    font-size:9px!important;
+  }
+  .rarity-head span{font-size:18px!important}
+  .rarity-head strong{font-size:22px!important}
+}
+
+@media(max-height:760px){
+  .previous-slot{
+    width:min(56vw,270px)!important;
+  }
+  .previous-plate{
+    width:min(36vw,182px)!important;
+  }
+  .previous-caption{
+    min-width:min(36vw,182px)!important;
+    max-width:min(56vw,270px)!important;
+  }
+}
