@@ -175,39 +175,99 @@ function featuresFor(p){
 
 function plate(p){
   const region=String(p.r);
-  const regionLength=region.length===3?86:64;
+  const regionTextLength=region.length===3?78:54;
+
   return `
     <div class="plate-shell" aria-label="${key(p)}">
-      <svg class="plate-svg" viewBox="0 0 520 112" role="img" aria-label="${key(p)}" xmlns="http://www.w3.org/2000/svg">
+      <svg
+        class="plate-svg"
+        viewBox="0 0 520 112"
+        preserveAspectRatio="xMidYMid meet"
+        role="img"
+        aria-label="${key(p)}"
+        xmlns="http://www.w3.org/2000/svg"
+      >
         <defs>
           <linearGradient id="plateBg" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stop-color="#fafaf8"/>
             <stop offset="52%" stop-color="#f1f1ef"/>
             <stop offset="100%" stop-color="#e6e7e5"/>
           </linearGradient>
-          <radialGradient id="screw" cx="35%" cy="30%" r="70%">
-            <stop offset="0%" stop-color="#f3f4f4"/>
-            <stop offset="45%" stop-color="#aeb3b6"/>
-            <stop offset="100%" stop-color="#555b5f"/>
+          <radialGradient id="plateScrew" cx="35%" cy="30%" r="70%">
+            <stop offset="0%" stop-color="#f1f3f4"/>
+            <stop offset="45%" stop-color="#aab0b4"/>
+            <stop offset="100%" stop-color="#555b60"/>
           </radialGradient>
         </defs>
+
         <rect x="2" y="2" width="516" height="108" rx="7" fill="#252a2e"/>
         <rect x="5" y="5" width="510" height="102" rx="5" fill="url(#plateBg)" stroke="#a5aaad" stroke-width="2"/>
         <rect x="10" y="10" width="500" height="92" rx="3" fill="none" stroke="#b9bdbf" stroke-width="1.2"/>
-        <line x1="390" y1="5" x2="390" y2="107" stroke="#151819" stroke-width="3"/>
-        <circle cx="18" cy="56" r="4.6" fill="url(#screw)" stroke="#505559" stroke-width="1"/>
-        <circle cx="502" cy="56" r="4.6" fill="url(#screw)" stroke="#505559" stroke-width="1"/>
 
-        <text x="56" y="81" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="69" font-weight="700" fill="#080909" textLength="52" lengthAdjust="spacingAndGlyphs">${p.a}</text>
-        <text x="203" y="82" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="79" font-weight="700" fill="#080909" textLength="176" lengthAdjust="spacingAndGlyphs">${p.n}</text>
-        <text x="330" y="81" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="68" font-weight="700" fill="#080909" textLength="104" lengthAdjust="spacingAndGlyphs">${p.b}${p.c}</text>
+        <line x1="392" y1="5" x2="392" y2="107" stroke="#151819" stroke-width="3"/>
 
-        <text x="455" y="60" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="49" font-weight="700" fill="#080909" textLength="${regionLength}" lengthAdjust="spacingAndGlyphs">${region}</text>
-        <text x="425" y="84" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#0b0c0d">RUS</text>
+        <circle cx="18" cy="56" r="4.6" fill="url(#plateScrew)" stroke="#505559" stroke-width="1"/>
+        <circle cx="502" cy="56" r="4.6" fill="url(#plateScrew)" stroke="#505559" stroke-width="1"/>
 
-        <rect x="452" y="70" width="39" height="24" rx="1" fill="#fff" stroke="#8d9295" stroke-width="1"/>
-        <rect x="452" y="78" width="39" height="8" fill="#1c61bb"/>
-        <rect x="452" y="86" width="39" height="8" fill="#ce3035"/>
+        <text
+          x="56" y="58"
+          text-anchor="middle"
+          dominant-baseline="middle"
+          font-family="Arial, Helvetica, sans-serif"
+          font-size="66"
+          font-weight="700"
+          fill="#080909"
+        >${p.a}</text>
+
+        <text
+          x="202" y="58"
+          text-anchor="middle"
+          dominant-baseline="middle"
+          font-family="Arial, Helvetica, sans-serif"
+          font-size="76"
+          font-weight="700"
+          fill="#080909"
+          textLength="164"
+          lengthAdjust="spacingAndGlyphs"
+        >${p.n}</text>
+
+        <text
+          x="323" y="58"
+          text-anchor="middle"
+          dominant-baseline="middle"
+          font-family="Arial, Helvetica, sans-serif"
+          font-size="64"
+          font-weight="700"
+          fill="#080909"
+          textLength="100"
+          lengthAdjust="spacingAndGlyphs"
+        >${p.b}${p.c}</text>
+
+        <text
+          x="456" y="39"
+          text-anchor="middle"
+          dominant-baseline="middle"
+          font-family="Arial, Helvetica, sans-serif"
+          font-size="47"
+          font-weight="700"
+          fill="#080909"
+          textLength="${regionTextLength}"
+          lengthAdjust="spacingAndGlyphs"
+        >${region}</text>
+
+        <text
+          x="426" y="81"
+          text-anchor="middle"
+          dominant-baseline="middle"
+          font-family="Arial, Helvetica, sans-serif"
+          font-size="15"
+          font-weight="700"
+          fill="#0b0c0d"
+        >RUS</text>
+
+        <rect x="452" y="69" width="38" height="24" rx="1" fill="#fff" stroke="#8d9295" stroke-width="1"/>
+        <rect x="452" y="77" width="38" height="8" fill="#1c61bb"/>
+        <rect x="452" y="85" width="38" height="8" fill="#ce3035"/>
       </svg>
     </div>
   `;
