@@ -638,3 +638,78 @@ button,input{font:inherit} button{color:inherit}
   .plate-host{width:90%!important}
   .previous-slot{width:min(36vw,182px)!important}
 }
+
+
+/* ===== v8.4 GOST plate rendering ===== */
+@font-face{
+  font-family:"GOSTPlate";
+  src:url("https://raw.githubusercontent.com/stanlapru/rus-carplates-font/main/GOST-R-50577-93.ttf") format("truetype");
+  font-style:normal;
+  font-weight:400 900;
+  font-display:swap;
+}
+
+.plate-svg text{
+  font-family:"GOSTPlate","Arial Narrow",Arial,sans-serif!important;
+  fill:#080909;
+  text-rendering:geometricPrecision;
+  -webkit-font-smoothing:antialiased;
+}
+
+.plate-svg .gost-main{
+  font-size:76px!important;
+  font-weight:400!important;
+  letter-spacing:0!important;
+}
+
+.plate-svg .gost-letter{
+  font-size:73px!important;
+}
+
+.plate-svg .gost-digits{
+  font-size:76px!important;
+  letter-spacing:2px!important;
+}
+
+.plate-svg .gost-pair{
+  font-size:73px!important;
+  letter-spacing:1px!important;
+}
+
+.plate-svg .gost-region{
+  font-size:58px!important;
+  font-weight:400!important;
+  letter-spacing:0!important;
+}
+
+.plate-svg .gost-rus{
+  font-family:"GOSTPlate",Arial,sans-serif!important;
+  font-size:20px!important;
+  font-weight:400!important;
+  letter-spacing:0!important;
+}
+
+.plate-host{
+  width:92%!important;
+  max-width:520px!important;
+}
+
+.previous-slot{
+  width:min(41vw,210px)!important;
+}
+
+.previous-slot .plate-svg,
+.collection-card .plate-svg,
+.detail-plate .plate-svg{
+  font-family:"GOSTPlate","Arial Narrow",Arial,sans-serif!important;
+}
+
+.previous-caption{
+  width:100%!important;
+  margin-top:6px!important;
+}
+
+@media(max-height:760px){
+  .plate-host{width:91%!important}
+  .previous-slot{width:min(38vw,192px)!important}
+}
