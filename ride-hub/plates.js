@@ -598,7 +598,7 @@ function renderStats(){
   if(promoStatus){
     promoStatus.textContent=state.luckyRolls>0
       ?'Удачных прокруток: '+state.luckyRolls
-      :(state.usedPromos.includes('SADA1')?'SADA1 использован':'Активировать бонус');
+      :'Активировать бонус';
   }
 
   $('#app').classList.toggle('lucky-active',state.luckyRolls>0);
@@ -1069,7 +1069,6 @@ function renderRarity(){
 function renderPromo(){
   openPanel('Промокод','БОНУС');
 
-  const used=state.usedPromos.includes('SADA1');
   const body=$('#panelBody');
 
   body.innerHTML=`
@@ -1078,7 +1077,7 @@ function renderPromo(){
         <span>✦</span>
         <div>
           <b>Супер-удачные прокрутки</b>
-          <small>Промокод даёт 10 прокруток с гарантированно сильными комбинациями.</small>
+          <small>SADA1 можно использовать сколько угодно раз. Каждая активация добавляет ещё 10 удачных прокруток.</small>
         </div>
       </div>
       <input
@@ -1087,11 +1086,9 @@ function renderPromo(){
         placeholder="Введи промокод"
         autocomplete="off"
         autocapitalize="characters"
-        value="${used?'SADA1':''}"
-        ${used?'disabled':''}
       >
-      <button class="ownership-primary" id="activatePromo" ${used?'disabled':''}>
-        ${used?'Промокод уже использован':'Активировать'}
+      <button class="ownership-primary" id="activatePromo">
+        Активировать
       </button>
       <div class="promo-remaining">
         <span>Осталось удачных прокруток</span>
@@ -1100,10 +1097,7 @@ function renderPromo(){
     </div>
   `;
 
-  const button=$('#activatePromo');
-  if(!button||used)return;
-
-  button.onclick=()=>{
+  $('#activatePromo').onclick=()=>{
     const code=String($('#promoInput')?.value||'').trim().toUpperCase();
 
     if(code!=='SADA1'){
@@ -1111,17 +1105,13 @@ function renderPromo(){
       return;
     }
 
-    if(state.usedPromos.includes(code)){
-      showToast('Промокод уже использован');
-      return;
-    }
-
-    state.usedPromos.push(code);
     state.luckyRolls+=10;
+    state.usedPromos=[...state.usedPromos,code].slice(-100);
     persist();
     renderStats();
     haptic('success');
-    showToast('SADA1 активирован · +10 удачных прокруток');
+    showToast('SADA1 · +10 удачных прокруток');
+    $('#promoInput').value='';
     renderPromo();
   };
 }
