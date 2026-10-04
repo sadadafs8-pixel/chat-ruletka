@@ -5,6 +5,9 @@ const $=s=>document.querySelector(s);
 const $$=s=>[...document.querySelectorAll(s)];
 const tg=window.Telegram?.WebApp;
 
+const ROLL_COST=1000;
+const START_BALANCE=1000000;
+
 const DISPLAY_TIERS=[
   {name:'Обычный',color:'#8b94a2',min:40,max:900,desc:'Обычная комбинация без выраженного рисунка.'},
   {name:'Необычный',color:'#35e982',min:1800,max:890000,desc:'Есть повтор цифр или букв.'},
@@ -15,6 +18,7 @@ const DISPLAY_TIERS=[
 
 const storageKey='nomer-v7-'+(tg?.initDataUnsafe?.user?.id||'local');
 const previousKeys=[
+  'nomer-v7-'+(tg?.initDataUnsafe?.user?.id||'local'),
   'nomer-v6-'+(tg?.initDataUnsafe?.user?.id||'local'),
   'nomer-v5-'+(tg?.initDataUnsafe?.user?.id||'local'),
   'nomer-v4-'+(tg?.initDataUnsafe?.user?.id||'local'),
@@ -30,7 +34,10 @@ let state={
   previous:null,
   region:'all',
   haptic:true,
-  reduced:false
+  reduced:false,
+  balance:START_BALANCE,
+  redeemedTransfers:[],
+  transferredOut:[]
 };
 
 let busy=false;
@@ -54,6 +61,9 @@ function load(){
       state.current=valid(state.current)?state.current:null;
       state.previous=valid(state.previous)?state.previous:null;
       state.rolls=Math.max(0,Number(state.rolls)||0);
+      state.balance=Number.isFinite(Number(state.balance))?Math.max(0,Math.round(Number(state.balance))):START_BALANCE;
+      state.redeemedTransfers=Array.isArray(state.redeemedTransfers)?state.redeemedTransfers.slice(-1000):[];
+      state.transferredOut=Array.isArray(state.transferredOut)?state.transferredOut.slice(-1000):[];
       if(state.region!=='all'&&!REGIONS.some(r=>r.code===state.region))state.region='all';
     }
   }catch{}
@@ -78,6 +88,42 @@ function hashString(s){
     h=Math.imul(h,16777619);
   }
   return h>>>0;
+}
+
+function displayId(p){
+  return 'NMR-'+String(p.id||'').toUpperCase();
+}
+
+function b64urlEncode(text){
+  const bytes=new TextEncoder().encode(text);
+  let bin='';
+  for(const b of bytes)bin+=String.fromCharCode(b);
+  return btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+
+function b64urlDecode(text){
+  const padded=text.replace(/-/g,'+').replace(/_/g,'/')+'==='.slice((text.length+3)%4);
+  const bin=atob(padded);
+  const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));
+  return new TextDecoder().decode(bytes);
+}
+
+function makeTransferCode(p){
+  const payload={v:1,p:{a:p.a,b:p.b,c:p.c,n:p.n,r:p.r,id:p.id,at:p.at,favorite:false}};
+  const json=JSON.stringify(payload);
+  const sig=hashString(json).toString(36).toUpperCase();
+  return 'NMR1.'+b64urlEncode(json)+'.'+sig;
+}
+
+function parseTransferCode(code){
+  const parts=String(code||'').trim().split('.');
+  if(parts.length!==3||parts[0]!=='NMR1')throw Error('bad-code');
+  const json=b64urlDecode(parts[1]);
+  const sig=hashString(json).toString(36).toUpperCase();
+  if(sig!==parts[2])throw Error('bad-signature');
+  const payload=JSON.parse(json);
+  if(!payload||payload.v!==1||!valid(payload.p))throw Error('bad-payload');
+  return {plate:payload.p,token:parts[2]+':'+payload.p.id};
 }
 
 function displayTier(p){
@@ -128,22 +174,41 @@ function featuresFor(p){
 }
 
 function plate(p){
+  const region=String(p.r);
+  const regionLength=region.length===3?86:64;
   return `
     <div class="plate-shell" aria-label="${key(p)}">
-      <div class="plate-face">
-        <div class="plate-main-flat">
-          <span class="plate-letter-flat">${p.a}</span>
-          <span class="plate-digits-flat">${p.n}</span>
-          <span class="plate-letter-flat pair">${p.b}${p.c}</span>
-        </div>
-        <div class="plate-side-flat">
-          <div class="plate-region-flat">${p.r}</div>
-          <div class="plate-country-flat">
-            <span>RUS</span>
-            <i class="plate-flag"></i>
-          </div>
-        </div>
-      </div>
+      <svg class="plate-svg" viewBox="0 0 520 112" role="img" aria-label="${key(p)}" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="plateBg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#fafaf8"/>
+            <stop offset="52%" stop-color="#f1f1ef"/>
+            <stop offset="100%" stop-color="#e6e7e5"/>
+          </linearGradient>
+          <radialGradient id="screw" cx="35%" cy="30%" r="70%">
+            <stop offset="0%" stop-color="#f3f4f4"/>
+            <stop offset="45%" stop-color="#aeb3b6"/>
+            <stop offset="100%" stop-color="#555b5f"/>
+          </radialGradient>
+        </defs>
+        <rect x="2" y="2" width="516" height="108" rx="7" fill="#252a2e"/>
+        <rect x="5" y="5" width="510" height="102" rx="5" fill="url(#plateBg)" stroke="#a5aaad" stroke-width="2"/>
+        <rect x="10" y="10" width="500" height="92" rx="3" fill="none" stroke="#b9bdbf" stroke-width="1.2"/>
+        <line x1="390" y1="5" x2="390" y2="107" stroke="#151819" stroke-width="3"/>
+        <circle cx="18" cy="56" r="4.6" fill="url(#screw)" stroke="#505559" stroke-width="1"/>
+        <circle cx="502" cy="56" r="4.6" fill="url(#screw)" stroke="#505559" stroke-width="1"/>
+
+        <text x="56" y="81" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="69" font-weight="700" fill="#080909" textLength="52" lengthAdjust="spacingAndGlyphs">${p.a}</text>
+        <text x="203" y="82" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="79" font-weight="700" fill="#080909" textLength="176" lengthAdjust="spacingAndGlyphs">${p.n}</text>
+        <text x="330" y="81" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="68" font-weight="700" fill="#080909" textLength="104" lengthAdjust="spacingAndGlyphs">${p.b}${p.c}</text>
+
+        <text x="455" y="60" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="49" font-weight="700" fill="#080909" textLength="${regionLength}" lengthAdjust="spacingAndGlyphs">${region}</text>
+        <text x="425" y="84" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#0b0c0d">RUS</text>
+
+        <rect x="452" y="70" width="39" height="24" rx="1" fill="#fff" stroke="#8d9295" stroke-width="1"/>
+        <rect x="452" y="78" width="39" height="8" fill="#1c61bb"/>
+        <rect x="452" y="86" width="39" height="8" fill="#ce3035"/>
+      </svg>
     </div>
   `;
 }
@@ -205,7 +270,7 @@ function collectionValue(){
 function renderStats(){
   $('#drawerOwned').textContent=state.collection.length.toLocaleString('ru-RU');
   $('#rollCounter').textContent=state.rolls.toLocaleString('ru-RU');
-  $('#balanceValue').textContent=fmtPrice(collectionValue());
+  $('#balanceValue').textContent=fmtPrice(state.balance);
 
   const label=state.region==='all'?'Россия · все регионы':'Россия · '+state.region;
   $('#regionLabel').textContent=label;
@@ -218,7 +283,7 @@ function renderStats(){
 
 function updateSave(){
   const saved=Boolean(
-    state.current&&state.collection.some(p=>key(p)===key(state.current))
+    state.current&&state.collection.some(p=>p.id===state.current.id)
   );
   $('#saveBtn').classList.toggle('saved',saved);
 }
@@ -242,7 +307,14 @@ function easeOutCubic(x){
 
 async function roll(){
   if(busy)return;
+  if(state.balance<ROLL_COST){
+    showToast('Недостаточно средств · прокрутка стоит '+fmtPrice(ROLL_COST));
+    return;
+  }
 
+  state.balance-=ROLL_COST;
+  persist();
+  renderStats();
   busy=true;
   closeDrawer();
   closePanel();
@@ -333,7 +405,7 @@ function saveCurrent(){
     return;
   }
 
-  const i=state.collection.findIndex(p=>key(p)===key(state.current));
+  const i=state.collection.findIndex(p=>p.id===state.current.id);
 
   if(i>=0){
     state.collection.splice(i,1);
@@ -399,34 +471,125 @@ function renderCollection(){
     return;
   }
 
-  body.innerHTML='<div class="collection-grid">'+state.collection.map((p,i)=>{
+  body.innerHTML='<div class="collection-grid">'+state.collection.map(p=>{
     const t=displayTier(p);
     const d=DISPLAY_TIERS[t];
-
     return `
-      <button class="collection-card" data-remove="${i}" style="--card-tier:${d.color}">
+      <button class="collection-card" data-plate-id="${p.id}" style="--card-tier:${d.color}">
         <div>${plate(p)}</div>
         <div class="collection-meta">
           <b>${d.name}</b>
           <span>${fmtPrice(priceFor(p))}</span>
+          <small>${displayId(p).slice(0,18)}…</small>
         </div>
       </button>
     `;
   }).join('')+'</div>';
 
-  body.querySelectorAll('[data-remove]').forEach(btn=>{
-    btn.onclick=()=>{
-      const idx=Number(btn.dataset.remove);
-      const p=state.collection[idx];
-      if(!p)return;
+  body.querySelectorAll('[data-plate-id]').forEach(btn=>{
+    btn.onclick=()=>renderPlateDetail(btn.dataset.plateId);
+  });
+}
 
-      state.collection.splice(idx,1);
+function renderPlateDetail(id){
+  const p=state.collection.find(x=>x.id===id);
+  if(!p){renderCollection();return}
+
+  const t=displayTier(p);
+  const d=DISPLAY_TIERS[t];
+  const value=priceFor(p);
+
+  openPanel('Номер','ТВОЙ ЭКЗЕМПЛЯР');
+  $('#panelBody').innerHTML=`
+    <div class="detail-plate">${plate(p)}</div>
+    <div class="ownership-card" style="--detail-tier:${d.color}">
+      <div class="ownership-row"><span>Редкость</span><strong>${d.name}</strong></div>
+      <div class="ownership-row"><span>Стоимость</span><strong>${fmtPrice(value)}</strong></div>
+      <div class="ownership-id">
+        <span>Уникальный ID</span>
+        <code>${displayId(p)}</code>
+      </div>
+      <button class="ownership-copy" id="copyPlateId">Скопировать ID</button>
+      <button class="ownership-primary" id="sellOwned">Продать за ${fmtPrice(value)}</button>
+      <button class="ownership-secondary" id="transferOwned">Передать другу</button>
+    </div>
+  `;
+
+  $('#copyPlateId').onclick=async()=>{
+    try{await navigator.clipboard.writeText(displayId(p));showToast('ID скопирован')}
+    catch{showToast(displayId(p))}
+  };
+
+  $('#sellOwned').onclick=()=>{
+    const idx=state.collection.findIndex(x=>x.id===p.id);
+    if(idx<0)return;
+    state.collection.splice(idx,1);
+    state.balance+=value;
+    persist();
+    renderStats();
+    renderCollection();
+    showToast('Продано за '+fmtPrice(value));
+  };
+
+  $('#transferOwned').onclick=()=>transferOwnedPlate(p.id);
+}
+
+async function transferOwnedPlate(id){
+  const idx=state.collection.findIndex(x=>x.id===id);
+  if(idx<0)return;
+  const p=state.collection[idx];
+  const code=makeTransferCode(p);
+
+  state.collection.splice(idx,1);
+  state.transferredOut=[...state.transferredOut,p.id].slice(-1000);
+  persist();
+  renderStats();
+
+  openPanel('Передача','КОД ДЛЯ ДРУГА');
+  $('#panelBody').innerHTML=`
+    <div class="transfer-box">
+      <h3>Номер снят с твоей коллекции</h3>
+      <p>Отправь этот код другу. У получателя сохранится тот же уникальный ID номера.</p>
+      <textarea id="transferCode" readonly>${code}</textarea>
+      <button class="ownership-primary" id="copyTransferCode">Скопировать код</button>
+    </div>
+  `;
+
+  $('#copyTransferCode').onclick=async()=>{
+    try{await navigator.clipboard.writeText(code);showToast('Код передачи скопирован')}
+    catch{showToast('Скопируй код вручную')}
+  };
+
+  try{await navigator.clipboard.writeText(code)}catch{}
+}
+
+function renderReceive(){
+  openPanel('Получить номер','ПЕРЕДАЧА');
+  $('#panelBody').innerHTML=`
+    <div class="transfer-box">
+      <h3>Вставь код передачи</h3>
+      <p>После подтверждения номер появится в твоей коллекции с исходным уникальным ID.</p>
+      <textarea id="receiveCode" placeholder="NMR1.…"></textarea>
+      <button class="ownership-primary" id="redeemTransfer">Получить номер</button>
+    </div>
+  `;
+
+  $('#redeemTransfer').onclick=()=>{
+    try{
+      const parsed=parseTransferCode($('#receiveCode').value);
+      if(state.redeemedTransfers.includes(parsed.token))throw Error('used');
+      if(state.collection.some(x=>x.id===parsed.plate.id))throw Error('owned');
+
+      state.collection.unshift(parsed.plate);
+      state.redeemedTransfers=[...state.redeemedTransfers,parsed.token].slice(-1000);
       persist();
       renderStats();
-      renderCollection();
-      showToast('Убрано из коллекции');
-    };
-  });
+      showToast('Номер получен');
+      renderPlateDetail(parsed.plate.id);
+    }catch{
+      showToast('Код передачи недействителен или уже использован');
+    }
+  };
 }
 
 function renderRarity(){
@@ -532,6 +695,7 @@ $$('.drawer-nav [data-action]').forEach(b=>{
     if(action==='collection') renderCollection();
     if(action==='rarity') renderRarity();
     if(action==='region') renderRegion();
+    if(action==='receive') renderReceive();
     if(action==='settings') renderSettings();
   };
 });
