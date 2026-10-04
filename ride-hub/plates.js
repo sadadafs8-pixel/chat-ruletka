@@ -485,6 +485,97 @@ function easeOutCubic(x){
   return 1-Math.pow(1-x,3);
 }
 
+
+const SLOT_LETTERS=['А','В','Е','К','М','Н','О','Р','С','Т','У','Х'];
+
+function randomSlotLetter(){
+  return SLOT_LETTERS[Math.floor(Math.random()*SLOT_LETTERS.length)];
+}
+
+function randomSlotDigit(){
+  return String(Math.floor(Math.random()*10));
+}
+
+function randomSlotRegion(){
+  return REGIONS[Math.floor(Math.random()*REGIONS.length)]?.code||'77';
+}
+
+function pulseSlotGlyph(node){
+  if(!node)return;
+  node.classList.remove('slot-tick');
+  void node.getBoundingClientRect();
+  node.classList.add('slot-tick');
+}
+
+function landSlotGlyph(node){
+  if(!node)return;
+  node.classList.remove('slot-tick','slot-pending');
+  node.classList.add('slot-land');
+  setTimeout(()=>node.classList.remove('slot-land'),240);
+}
+
+async function animateSequentialPlate(final,reduced=false){
+  const seed={
+    ...final,
+    a:randomSlotLetter(),
+    n:randomSlotDigit()+randomSlotDigit()+randomSlotDigit(),
+    b:randomSlotLetter(),
+    c:randomSlotLetter(),
+    r:randomSlotRegion()
+  };
+
+  $('#currentPlate').innerHTML=plate(seed);
+
+  const chars=[...document.querySelectorAll('#currentPlate .gost-char')];
+  const regionNode=$('#currentPlate .gost-region');
+  const finalChars=[final.a,final.n[0],final.n[1],final.n[2],final.b,final.c];
+
+  chars.forEach(node=>node.classList.add('slot-pending'));
+  if(regionNode)regionNode.classList.add('slot-pending');
+
+  const spins=reduced?2:7;
+  const tick=reduced?24:48;
+
+  for(let i=0;i<chars.length;i++){
+    const node=chars[i];
+    node.classList.remove('slot-pending');
+    node.classList.add('slot-active');
+
+    for(let s=0;s<spins;s++){
+      node.textContent=i===0||i>=4?randomSlotLetter():randomSlotDigit();
+      pulseSlotGlyph(node);
+      if(s%2===0)haptic();
+      await sleep(tick+(reduced?0:s*2));
+    }
+
+    node.textContent=finalChars[i];
+    node.classList.remove('slot-active');
+    landSlotGlyph(node);
+    haptic();
+    await sleep(reduced?25:75);
+  }
+
+  if(regionNode){
+    regionNode.classList.remove('slot-pending');
+    regionNode.classList.add('slot-active');
+
+    for(let s=0;s<(reduced?2:6);s++){
+      const code=randomSlotRegion();
+      regionNode.textContent=code;
+      regionNode.setAttribute('textLength',code.length===3?'91':'61');
+      pulseSlotGlyph(regionNode);
+      await sleep(reduced?24:52);
+    }
+
+    regionNode.textContent=String(final.r);
+    regionNode.setAttribute('textLength',String(final.r).length===3?'91':'61');
+    regionNode.classList.remove('slot-active');
+    landSlotGlyph(regionNode);
+  }
+
+  await sleep(reduced?40:120);
+}
+
 async function roll(){
   if(busy)return;
   if(state.balance<ROLL_COST){
@@ -516,16 +607,8 @@ async function roll(){
   updateSellButton();
 
   const final=generate(state.region);
-  const steps=reduced?3:20;
 
-  for(let i=0;i<steps;i++){
-    const temp=generate(state.region);
-    $('#currentPlate').innerHTML=plate(temp);
-
-    if(i%3===0)haptic();
-
-    await sleep(reduced?18:44+Math.min(52,i*2));
-  }
+  await animateSequentialPlate(final,reduced);
 
   state.current=final;
   state.rolls++;
@@ -535,12 +618,8 @@ async function roll(){
   $('#currentPlate').innerHTML=plate(final);
 
   $('#app').classList.remove('rolling');
-  $('#app').classList.add('final-pop');
-
-  await sleep(reduced?90:360);
-
-  $('#app').classList.remove('final-pop');
-  $('#app').classList.add('revealed');
+  $('#app').classList.add('revealed','slot-complete');
+  setTimeout(()=>$('#app').classList.remove('slot-complete'),380);
 
   await analyze(final,reduced);
 
