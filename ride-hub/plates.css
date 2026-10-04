@@ -604,3 +604,37 @@ button,input{font:inherit} button{color:inherit}
   .plate-host{width:91%!important}
   .previous-slot{width:min(35vw,178px)!important}
 }
+
+
+/* ===== v8.3 real-plate typography + mirrored mini ===== */
+.plate-svg text{
+  font-family:"Roboto Condensed","Arial Narrow",Arial,sans-serif!important;
+  font-weight:700!important;
+  letter-spacing:-.02em;
+  text-rendering:geometricPrecision;
+  -webkit-font-smoothing:antialiased;
+}
+
+.plate-host{
+  width:91%!important;
+  max-width:505px!important;
+}
+
+.previous-slot{
+  width:min(39vw,198px)!important;
+}
+
+.previous-caption{
+  height:29px!important;
+  padding:0 14px!important;
+}
+
+.previous-caption span,
+.previous-caption strong{
+  font-size:10px!important;
+}
+
+@media(max-height:760px){
+  .plate-host{width:90%!important}
+  .previous-slot{width:min(36vw,182px)!important}
+}
