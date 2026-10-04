@@ -509,9 +509,9 @@ function pulseSlotGlyph(node){
 
 function landSlotGlyph(node){
   if(!node)return;
-  node.classList.remove('slot-tick','slot-pending');
+  node.classList.remove('slot-tick','slot-pending','slot-active');
   node.classList.add('slot-land');
-  setTimeout(()=>node.classList.remove('slot-land'),240);
+  setTimeout(()=>node.classList.remove('slot-land'),130);
 }
 
 async function animateSequentialPlate(final,reduced=false){
@@ -533,8 +533,8 @@ async function animateSequentialPlate(final,reduced=false){
   chars.forEach(node=>node.classList.add('slot-pending'));
   if(regionNode)regionNode.classList.add('slot-pending');
 
-  const spins=reduced?2:7;
-  const tick=reduced?24:48;
+  const spins=reduced?1:4;
+  const tick=reduced?16:27;
 
   for(let i=0;i<chars.length;i++){
     const node=chars[i];
@@ -544,27 +544,27 @@ async function animateSequentialPlate(final,reduced=false){
     for(let s=0;s<spins;s++){
       node.textContent=i===0||i>=4?randomSlotLetter():randomSlotDigit();
       pulseSlotGlyph(node);
-      if(s%2===0)haptic();
-      await sleep(tick+(reduced?0:s*2));
+      if(s===0||s===spins-1)haptic();
+      await sleep(tick);
     }
 
     node.textContent=finalChars[i];
     node.classList.remove('slot-active');
     landSlotGlyph(node);
     haptic();
-    await sleep(reduced?25:75);
+    await sleep(reduced?12:28);
   }
 
   if(regionNode){
     regionNode.classList.remove('slot-pending');
     regionNode.classList.add('slot-active');
 
-    for(let s=0;s<(reduced?2:6);s++){
+    for(let s=0;s<(reduced?1:3);s++){
       const code=randomSlotRegion();
       regionNode.textContent=code;
       regionNode.setAttribute('textLength',code.length===3?'91':'61');
       pulseSlotGlyph(regionNode);
-      await sleep(reduced?24:52);
+      await sleep(reduced?16:30);
     }
 
     regionNode.textContent=String(final.r);
@@ -573,7 +573,7 @@ async function animateSequentialPlate(final,reduced=false){
     landSlotGlyph(regionNode);
   }
 
-  await sleep(reduced?40:120);
+  await sleep(reduced?18:45);
 }
 
 async function roll(){
@@ -619,7 +619,7 @@ async function roll(){
 
   $('#app').classList.remove('rolling');
   $('#app').classList.add('revealed','slot-complete');
-  setTimeout(()=>$('#app').classList.remove('slot-complete'),380);
+  setTimeout(()=>$('#app').classList.remove('slot-complete'),220);
 
   await analyze(final,reduced);
 
