@@ -551,3 +551,56 @@ button,input{font:inherit} button{color:inherit}
   .plate-host{width:93%!important}
   .previous-slot{width:min(37vw,188px)!important}
 }
+
+
+/* ===== v8.2 precise plate geometry ===== */
+.plate-host{
+  width:92%!important;
+  max-width:515px!important;
+}
+.plate-shell{
+  width:100%!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+.plate-svg{
+  display:block!important;
+  width:100%!important;
+  height:auto!important;
+  aspect-ratio:520/112!important;
+  overflow:visible!important;
+  transform:none!important;
+  shape-rendering:geometricPrecision;
+}
+.previous-slot{
+  width:min(38vw,194px)!important;
+}
+.previous-plate,
+.previous-slot .plate-shell,
+.previous-slot .plate-svg{
+  width:100%!important;
+  height:auto!important;
+}
+.previous-caption{
+  width:100%!important;
+  margin-top:6px!important;
+  padding:0 13px!important;
+}
+.collection-card .plate-shell,
+.detail-plate .plate-shell{
+  width:100%!important;
+}
+.collection-card .plate-svg{
+  width:100%!important;
+  max-width:290px!important;
+  height:auto!important;
+}
+.detail-plate .plate-svg{
+  width:100%!important;
+  height:auto!important;
+}
+@media(max-height:760px){
+  .plate-host{width:91%!important}
+  .previous-slot{width:min(35vw,178px)!important}
+}
