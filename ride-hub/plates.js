@@ -1077,7 +1077,7 @@ function renderPromo(){
         <span>✦</span>
         <div>
           <b>Супер-удачные прокрутки</b>
-          <small>SADA1 можно использовать сколько угодно раз. Каждая активация добавляет ещё 10 удачных прокруток.</small>
+          <small>SADA1 даёт +10, SADA2 даёт +100 супер-удачных прокруток. Оба промокода можно использовать сколько угодно раз.</small>
         </div>
       </div>
       <input
@@ -1100,17 +1100,23 @@ function renderPromo(){
   $('#activatePromo').onclick=()=>{
     const code=String($('#promoInput')?.value||'').trim().toUpperCase();
 
-    if(code!=='SADA1'){
+    const promoRewards={
+      SADA1:10,
+      SADA2:100
+    };
+    const reward=promoRewards[code];
+
+    if(!reward){
       showToast('Промокод не найден');
       return;
     }
 
-    state.luckyRolls+=10;
+    state.luckyRolls+=reward;
     state.usedPromos=[...state.usedPromos,code].slice(-100);
     persist();
     renderStats();
     haptic('success');
-    showToast('SADA1 · +10 удачных прокруток');
+    showToast(code+' · +'+reward+' удачных прокруток');
     $('#promoInput').value='';
     renderPromo();
   };
