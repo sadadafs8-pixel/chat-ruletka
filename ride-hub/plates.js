@@ -176,8 +176,8 @@ function featuresFor(p){
 }
 
 function plate(p){
-  const region=String(p.r);
-  const rid=(p.id||key(p)).replace(/[^a-zA-Z0-9]/g,'').slice(-10);
+  const region = String(p.r);
+  const rid = (p.id || key(p)).replace(/[^a-zA-Z0-9]/g, '').slice(-10);
 
   return `
     <div class="plate-shell" aria-label="${key(p)}">
@@ -190,64 +190,70 @@ function plate(p){
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          <linearGradient id="realPlateBg-${rid}" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#fbfbf8"/>
-            <stop offset="55%" stop-color="#f4f4f0"/>
-            <stop offset="100%" stop-color="#ecece8"/>
+          <linearGradient id="plateBg-${rid}" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#fbfbf9"/>
+            <stop offset="40%" stop-color="#f4f4f1"/>
+            <stop offset="100%" stop-color="#ecece7"/>
           </linearGradient>
-          <radialGradient id="realScrew-${rid}" cx="35%" cy="30%" r="70%">
-            <stop offset="0%" stop-color="#f0f1f1"/>
-            <stop offset="42%" stop-color="#aeb2b4"/>
-            <stop offset="100%" stop-color="#5d6265"/>
+
+          <linearGradient id="plateEdge-${rid}" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#9da1a3"/>
+            <stop offset="100%" stop-color="#707577"/>
+          </linearGradient>
+
+          <radialGradient id="screw-${rid}" cx="35%" cy="30%" r="70%">
+            <stop offset="0%" stop-color="#f1f2f3"/>
+            <stop offset="45%" stop-color="#aeb3b6"/>
+            <stop offset="100%" stop-color="#585d61"/>
           </radialGradient>
-          <filter id="glyphLift-${rid}" x="-5%" y="-5%" width="110%" height="115%">
-            <feDropShadow dx="0" dy="1" stdDeviation="0.35" flood-color="#000000" flood-opacity=".28"/>
+
+          <filter id="emboss-${rid}" x="-5%" y="-5%" width="110%" height="115%">
+            <feDropShadow dx="0" dy="0.55" stdDeviation="0.28" flood-color="#000" flood-opacity=".28"/>
           </filter>
         </defs>
 
-        <!-- 520 × 112 mm type-1 plate -->
-        <rect x="1" y="1" width="518" height="110" rx="4"
-              fill="url(#realPlateBg-${rid})" stroke="#84888a" stroke-width="2"/>
+        <rect x="1.5" y="1.5" width="517" height="109" rx="4"
+              fill="url(#plateBg-${rid})"
+              stroke="url(#plateEdge-${rid})"
+              stroke-width="2"/>
 
-        <!-- GOST-style 3 mm black edging -->
         <rect x="8.5" y="8.5" width="503" height="95" rx="2"
-              fill="none" stroke="#111314" stroke-width="3"/>
+              fill="none"
+              stroke="#111314"
+              stroke-width="3"/>
 
-        <!-- region divider -->
         <line x1="390" y1="8.5" x2="390" y2="103.5"
-              stroke="#111314" stroke-width="3"/>
+              stroke="#111314"
+              stroke-width="3"/>
 
-        <!-- Ø7 mounting holes -->
-        <circle cx="20" cy="56" r="3.5"
-                fill="url(#realScrew-${rid})" stroke="#54595c" stroke-width=".8"/>
-        <circle cx="500" cy="56" r="3.5"
-                fill="url(#realScrew-${rid})" stroke="#54595c" stroke-width=".8"/>
+        <circle cx="20" cy="56" r="3.5" fill="url(#screw-${rid})" stroke="#575c60" stroke-width=".8"/>
+        <circle cx="500" cy="56" r="3.5" fill="url(#screw-${rid})" stroke="#575c60" stroke-width=".8"/>
 
-        <!-- Main registration combination: GOST plate font, 76 mm nominal height -->
-        <g class="gost-glyphs" filter="url(#glyphLift-${rid})">
-          <text x="36" y="86" class="gost-main gost-letter">${p.a}</text>
-          <text x="98" y="86" class="gost-main gost-digits">${p.n}</text>
-          <text x="260" y="86" class="gost-main gost-pair">${p.b}${p.c}</text>
+        <g class="plate-main-glyphs" filter="url(#emboss-${rid})">
+          <text x="35" y="85" class="gost-main gost-letter">${p.a}</text>
+          <text x="94" y="85" class="gost-main gost-digits">${p.n}</text>
+          <text x="258" y="85" class="gost-main gost-pair">${p.b}${p.c}</text>
         </g>
 
-        <!-- Region code: 58 mm nominal height -->
         <text
-          x="447" y="62"
+          x="448" y="63"
           text-anchor="middle"
           class="gost-region"
-          textLength="${region.length===3?70:48}"
+          textLength="${region.length === 3 ? 74 : 49}"
           lengthAdjust="spacingAndGlyphs"
         >${region}</text>
 
-        <!-- RUS: 20 mm nominal height -->
-        <text x="419" y="92" text-anchor="middle" class="gost-rus">RUS</text>
+        <text
+          x="421" y="91"
+          text-anchor="middle"
+          class="gost-rus"
+        >RUS</text>
 
-        <!-- Russian flag -->
         <g aria-label="Флаг России">
-          <rect x="449" y="75" width="40" height="20" rx=".7"
-                fill="#fff" stroke="#777c7f" stroke-width=".8"/>
-          <rect x="449" y="81.7" width="40" height="6.6" fill="#245fbd"/>
-          <rect x="449" y="88.3" width="40" height="6.7" fill="#cf3035"/>
+          <rect x="449" y="73" width="40" height="20" rx=".6"
+                fill="#fff" stroke="#7b8083" stroke-width=".8"/>
+          <rect x="449" y="79.7" width="40" height="6.6" fill="#255fbd"/>
+          <rect x="449" y="86.3" width="40" height="6.7" fill="#cf3035"/>
         </g>
       </svg>
     </div>
