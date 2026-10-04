@@ -7,10 +7,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>НОМЕР</title>
-  <link rel="stylesheet" href="plates.css?v=10.0">
+  <link rel="stylesheet" href="plates.css?v=10.1">
   <script src="https://telegram.org/js/telegram-web-app.js" defer></script>
   <script src="plate-engine.js?v=1" defer></script>
-  <script src="plates.js?v=10.0" defer></script>
+  <script src="plates.js?v=10.1" defer></script>
 </head>
 <body>
   <div class="app" id="app">
@@ -74,6 +74,7 @@
       <span class="play-icon"></span>
       <span class="loading-dot"></span>
       <span class="roll-cost">1 000 ₽</span>
+      <span class="lucky-badge hidden" id="luckyBadge">УДАЧА ×10</span>
     </button>
 
     <button class="region-chip" id="regionBtn">
@@ -125,13 +126,17 @@
           <span class="nav-icon">↘</span>
           <span><b>Получить номер</b><small>Ввести код передачи</small></span>
         </button>
+        <button data-action="promo">
+          <span class="nav-icon">✦</span>
+          <span><b>Промокод</b><small id="promoStatus">Активировать бонус</small></span>
+        </button>
         <button data-action="settings">
           <span class="nav-icon">⚙</span>
           <span><b>Настройки</b><small>Анимация и вибрация</small></span>
         </button>
       </nav>
 
-      <div class="drawer-foot">НОМЕР · v10.0</div>
+      <div class="drawer-foot">НОМЕР · v10.1</div>
     </aside>
 
     <section class="panel" id="panel" aria-hidden="true">
