@@ -34,6 +34,7 @@ let state={
   previous:null,
   region:'all',
   haptic:true,
+  sound:true,
   reduced:false,
   balance:START_BALANCE,
   redeemedTransfers:[],
@@ -64,6 +65,7 @@ function load(){
       state.current=valid(state.current)?state.current:null;
       state.previous=valid(state.previous)?state.previous:null;
       state.rolls=Math.max(0,Number(state.rolls)||0);
+      state.sound=state.sound!==false;
       state.balance=Number.isFinite(Number(state.balance))?Math.max(0,Math.round(Number(state.balance))):START_BALANCE;
       state.redeemedTransfers=Array.isArray(state.redeemedTransfers)?state.redeemedTransfers.slice(-1000):[];
       state.transferredOut=Array.isArray(state.transferredOut)?state.transferredOut.slice(-1000):[];
@@ -641,12 +643,94 @@ function updateSave(){
   }
 }
 
+let audioCtx=null;
+
+function ensureAudio(){
+  if(!state.sound)return null;
+  try{
+    const Ctx=window.AudioContext||window.webkitAudioContext;
+    if(!Ctx)return null;
+    if(!audioCtx)audioCtx=new Ctx();
+    if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});
+    return audioCtx;
+  }catch{
+    return null;
+  }
+}
+
+function playTone(freq,duration=.045,volume=.025,type='sine',delay=0){
+  if(!state.sound)return;
+  const ctx=ensureAudio();
+  if(!ctx)return;
+
+  try{
+    const now=ctx.currentTime+delay;
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
+
+    osc.type=type;
+    osc.frequency.setValueAtTime(freq,now);
+
+    gain.gain.setValueAtTime(.0001,now);
+    gain.gain.exponentialRampToValueAtTime(Math.max(.0002,volume),now+.006);
+    gain.gain.exponentialRampToValueAtTime(.0001,now+duration);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now+duration+.015);
+  }catch{}
+}
+
+function soundTick(position=0){
+  playTone(620+position*46,.035,.018,'square');
+}
+
+function soundLand(position=0){
+  playTone(340+position*34,.065,.035,'triangle');
+  playTone(680+position*42,.045,.014,'sine',.014);
+}
+
+function soundFinal(p){
+  const legendary=displayTier(p)>=4;
+
+  if(legendary){
+    playTone(523.25,.12,.045,'triangle',0);
+    playTone(659.25,.13,.045,'triangle',.07);
+    playTone(783.99,.16,.05,'triangle',.14);
+    playTone(1046.5,.20,.055,'sine',.22);
+  }else{
+    playTone(440,.08,.03,'triangle',0);
+    playTone(659.25,.12,.035,'sine',.065);
+  }
+}
+
 function haptic(kind='selection'){
   if(!state.haptic)return;
 
   try{
-    if(kind==='success') tg?.HapticFeedback.notificationOccurred('success');
-    else tg?.HapticFeedback.selectionChanged();
+    if(tg?.HapticFeedback){
+      if(kind==='legendary'){
+        tg.HapticFeedback.notificationOccurred('success');
+        setTimeout(()=>{try{tg.HapticFeedback.impactOccurred('heavy')}catch{}},70);
+      }else if(kind==='success'){
+        tg.HapticFeedback.notificationOccurred('success');
+      }else if(kind==='land'){
+        tg.HapticFeedback.impactOccurred('light');
+      }else{
+        tg.HapticFeedback.selectionChanged();
+      }
+      return;
+    }
+  }catch{}
+
+  try{
+    if(!navigator.vibrate)return;
+    if(kind==='legendary')navigator.vibrate([35,25,55,30,80]);
+    else if(kind==='success')navigator.vibrate([30,25,45]);
+    else if(kind==='land')navigator.vibrate(18);
+    else navigator.vibrate(8);
   }catch{}
 }
 
@@ -794,14 +878,16 @@ async function animateSequentialPlate(final,reduced=false){
     for(let s=0;s<spins;s++){
       node.textContent=i===0||i>=4?randomSlotLetter():randomSlotDigit();
       pulseSlotGlyph(node);
-      if(s===0||s===spins-1)haptic();
+      soundTick(i);
+      if(s===0||s===spins-1)haptic('selection');
       await sleep(tick);
     }
 
     node.textContent=finalChars[i];
     node.classList.remove('slot-active');
     landSlotGlyph(node);
-    haptic();
+    soundLand(i);
+    haptic('land');
     await sleep(reduced?12:28);
   }
 
@@ -814,6 +900,8 @@ async function animateSequentialPlate(final,reduced=false){
       regionNode.textContent=code;
       regionNode.setAttribute('textLength',code.length===3?'91':'61');
       pulseSlotGlyph(regionNode);
+      soundTick(6);
+      if(s===0)haptic('selection');
       await sleep(reduced?16:30);
     }
 
@@ -821,6 +909,8 @@ async function animateSequentialPlate(final,reduced=false){
     regionNode.setAttribute('textLength',String(final.r).length===3?'91':'61');
     regionNode.classList.remove('slot-active');
     landSlotGlyph(regionNode);
+    soundLand(6);
+    haptic('land');
   }
 
   await sleep(reduced?18:45);
@@ -828,6 +918,7 @@ async function animateSequentialPlate(final,reduced=false){
 
 async function roll(){
   if(busy)return;
+  ensureAudio();
   if(state.balance<ROLL_COST){
     showToast('Недостаточно средств · прокрутка стоит '+fmtPrice(ROLL_COST));
     return;
@@ -881,7 +972,8 @@ async function roll(){
 
   renderStats();
   updateSellButton();
-  haptic('success');
+  soundFinal(final);
+  haptic(displayTier(final)>=4?'legendary':'success');
   busy=false;
 }
 
@@ -1196,6 +1288,10 @@ function renderSettings(){
 
   $('#panelBody').innerHTML=`
     <div class="setting">
+      <div>Звук<small>Щелчки символов и финальный звук выпадения</small></div>
+      <button class="switch ${state.sound?'on':''}" id="soundSwitch"><i></i></button>
+    </div>
+    <div class="setting">
       <div>Вибрация<small>Отклик при переборе и выпадении номера</small></div>
       <button class="switch ${state.haptic?'on':''}" id="hapticSwitch"><i></i></button>
     </div>
@@ -1204,6 +1300,16 @@ function renderSettings(){
       <button class="switch ${state.reduced?'on':''}" id="reducedSwitch"><i></i></button>
     </div>
   `;
+
+  $('#soundSwitch').onclick=()=>{
+    state.sound=!state.sound;
+    persist();
+    if(state.sound){
+      ensureAudio();
+      playTone(660,.08,.025,'sine');
+    }
+    renderSettings();
+  };
 
   $('#hapticSwitch').onclick=()=>{
     state.haptic=!state.haptic;
