@@ -894,14 +894,14 @@ async function analyze(p,reduced){
   // Чем дороже номер, тем дольше идёт оценка и накрутка суммы.
   // Верхний предел оставляем достаточно коротким, чтобы открытие не утомляло.
   const revealDuration=
-    targetPrice>=10000000?5200:
-    targetPrice>=5000000?4500:
-    targetPrice>=2000000?3900:
-    targetPrice>=800000?3200:
-    targetPrice>=300000?2700:
-    targetPrice>=150000?2300:
-    targetPrice>=25000?1600:
-    targetPrice>=5000?1150:900;
+    targetPrice>=10000000?6200:
+    targetPrice>=5000000?5400:
+    targetPrice>=2000000?4700:
+    targetPrice>=800000?3900:
+    targetPrice>=300000?3250:
+    targetPrice>=150000?2750:
+    targetPrice>=25000?1900:
+    targetPrice>=5000?1350:1050;
 
   const applyProgress=raw=>{
     const clamped=Math.max(0,Math.min(1,raw));
