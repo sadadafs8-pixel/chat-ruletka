@@ -1,0 +1,47 @@
+name: Deploy NOMER to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'ride-hub/index.html'
+      - 'ride-hub/plates.css'
+      - 'ride-hub/plates.js'
+      - 'ride-hub/plate-engine.js'
+      - 'ride-hub/FONT-LICENSE.txt'
+      - '.github/workflows/deploy-nomer-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Prepare NOMER site
+        run: |
+          rm -rf /tmp/nomer-site
+          mkdir -p /tmp/nomer-site
+          cp ride-hub/index.html /tmp/nomer-site/index.html
+          cp ride-hub/plates.css /tmp/nomer-site/plates.css
+          cp ride-hub/plates.js /tmp/nomer-site/plates.js
+          cp ride-hub/plate-engine.js /tmp/nomer-site/plate-engine.js
+          cp ride-hub/FONT-LICENSE.txt /tmp/nomer-site/FONT-LICENSE.txt
+          touch /tmp/nomer-site/.nojekyll
+
+      - name: Publish gh-pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch --orphan nomer-pages-build
+          git rm -rf . || true
+          cp -a /tmp/nomer-site/. .
+          git add -A
+          git commit -m "Deploy NOMER from ${GITHUB_SHA}"
+          git push --force origin HEAD:gh-pages
