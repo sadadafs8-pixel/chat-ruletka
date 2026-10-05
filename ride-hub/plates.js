@@ -891,17 +891,26 @@ async function analyze(p,reduced){
   const targetProgress=TIER_PROGRESS[targetTier];
   renderEstimate(p);
 
-  // Чем дороже номер, тем дольше идёт оценка и накрутка суммы.
-  // Верхний предел оставляем достаточно коротким, чтобы открытие не утомляло.
-  const revealDuration=
-    targetPrice>=10000000?6200:
-    targetPrice>=5000000?5400:
-    targetPrice>=2000000?4700:
-    targetPrice>=800000?3900:
-    targetPrice>=300000?3250:
-    targetPrice>=150000?2750:
-    targetPrice>=25000?1900:
-    targetPrice>=5000?1350:1050;
+  // Одинаковый ритм начисления: один денежный тик каждые 42 мс.
+  // Чем дороже номер, тем больше таких тиков, поэтому реально редкие
+  // номера считаются заметно дольше, а дешёвые пролетают быстро.
+  const MONEY_TICK_MS=42;
+  const minPriceForScale=800;
+  const maxPriceForScale=30000000;
+  const logMin=Math.log10(minPriceForScale);
+  const logMax=Math.log10(maxPriceForScale);
+  const normalized=Math.max(0,Math.min(1,
+    (Math.log10(Math.max(targetPrice,minPriceForScale))-logMin)/(logMax-logMin)
+  ));
+  const moneySteps=Math.max(8,Math.round(8+Math.pow(normalized,1.28)*252));
+
+  const displayRound=
+    targetPrice>=10000000?25000:
+    targetPrice>=2000000?10000:
+    targetPrice>=800000?5000:
+    targetPrice>=150000?1000:
+    targetPrice>=25000?500:
+    targetPrice>=5000?250:100;
 
   const applyProgress=raw=>{
     const clamped=Math.max(0,Math.min(1,raw));
@@ -914,46 +923,44 @@ async function analyze(p,reduced){
     }
     setTierVisual(stage,progress);
 
-    // Деньги идут почти линейно: дорогая сумма не появляется почти целиком
-    // в первую секунду, а реально докручивается до самого финала.
-    $('#priceValue').textContent=fmtPrice(targetPrice*clamped);
-  };
+    const rawValue=targetPrice*clamped;
+    const shownValue=clamped>=1
+      ?targetPrice
+      :Math.min(targetPrice,Math.round(rawValue/displayRound)*displayRound);
 
-  const animatePhase=(from,to,duration)=>new Promise(resolve=>{
-    const start=performance.now();
-    function frame(now){
-      const t=Math.min(1,(now-start)/Math.max(1,duration));
-      applyProgress(from+(to-from)*t);
-      if(t<1)requestAnimationFrame(frame);
-      else resolve();
-    }
-    requestAnimationFrame(frame);
-  });
+    $('#priceValue').textContent=fmtPrice(shownValue);
+  };
 
   if(reduced){
     applyProgress(1);
-  }else if(targetTier>=3){
-    const holdAt=targetTier===4?.76:.70;
-    const firstPhase=Math.round(revealDuration*.46);
-    const suspensePhase=Math.round(revealDuration*.18);
-    const finalPhase=Math.round(revealDuration*.36);
-
-    await animatePhase(0,holdAt,firstPhase);
-    $('#app').classList.add('rarity-suspense');
-    $('#studioStatus').textContent=targetTier===4?'ЛЕГЕНДАРНОЕ СОЧЕТАНИЕ':'ОЧЕНЬ РЕДКОЕ СОЧЕТАНИЕ';
-    haptic('selection');
-    await sleep(suspensePhase);
-    $('#app').classList.remove('rarity-suspense');
-    await animatePhase(holdAt,1,finalPhase);
   }else{
-    await animatePhase(0,1,revealDuration);
+    let suspenseShown=false;
+
+    for(let step=1;step<=moneySteps;step++){
+      const raw=step/moneySteps;
+      applyProgress(raw);
+
+      if(
+        !suspenseShown&&
+        targetTier>=3&&
+        raw>=(targetTier===4?.74:.70)
+      ){
+        suspenseShown=true;
+        $('#app').classList.add('rarity-suspense');
+        $('#studioStatus').textContent=targetTier===4?'ЛЕГЕНДАРНОЕ СОЧЕТАНИЕ':'ОЧЕНЬ РЕДКОЕ СОЧЕТАНИЕ';
+        haptic('selection');
+        await sleep(targetTier===4?900:650);
+        $('#app').classList.remove('rarity-suspense');
+      }
+
+      if(step<moneySteps)await sleep(MONEY_TICK_MS);
+    }
   }
 
   setTierVisual(targetTier,targetProgress);
   $('#priceValue').textContent=fmtPrice(targetPrice);
   $('#featureList').innerHTML=featuresFor(p).map(x=>'<span>'+x+'</span>').join('');
 }
-
 function saveCurrent(){
   if(busy)return;
   if(!state.current){
