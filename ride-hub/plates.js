@@ -17,6 +17,7 @@ const DISPLAY_TIERS=[
   {name:'Эпический',color:'#a15aff',min:150000,max:799999,desc:'Тройки, низкие номера, одинаковые буквы и сильные сочетания.'},
   {name:'Легендарный',color:'#f0a51a',min:800000,max:30000000,desc:'Сильные сочетания цифр и букв, столичные коды и избранные серии.'}
 ];
+const TIER_PROGRESS=[9,31,53,75,99];
 
 const storageKey='nomer-v7-'+(tg?.initDataUnsafe?.user?.id||'local');
 const previousKeys=[
@@ -277,13 +278,23 @@ function plate(p){
   </svg></div>`;
 }
 
-function setTierVisual(index){
-  const d=DISPLAY_TIERS[index];
+function setTierVisual(index,progress=TIER_PROGRESS[index]??0){
+  const safeIndex=Math.max(0,Math.min(DISPLAY_TIERS.length-1,index));
+  const d=DISPLAY_TIERS[safeIndex];
+  const pct=Math.max(0,Math.min(100,Number(progress)||0));
   document.documentElement.style.setProperty('--tier',d.color);
   $('#rarityName').textContent=d.name;
 
-  $$('#rarityScale i').forEach((el,i)=>{
-    el.classList.toggle('active',i<=index);
+  const scale=$('#rarityScale');
+  if(scale)scale.style.setProperty('--rarity-progress',pct+'%');
+
+  $('#rarityScale i').forEach((el,i)=>{
+    el.classList.toggle('active',i<=safeIndex);
+    el.classList.toggle('current',i===safeIndex);
+  });
+  $('.rarity-ladder-labels span').forEach((el,i)=>{
+    el.classList.toggle('passed',i<safeIndex);
+    el.classList.toggle('current',i===safeIndex);
   });
 }
 
@@ -834,7 +845,7 @@ async function roll(){
   $('#featureList').innerHTML='';
   $('#priceValue').textContent='0 ₽';
   renderEstimate(null);
-  setTierVisual(0);
+  setTierVisual(0,0);
   updateSellButton();
 
   const legendaryRoll=state.legendaryRolls>0;
@@ -877,35 +888,51 @@ async function roll(){
 async function analyze(p,reduced){
   const targetTier=displayTier(p);
   const targetPrice=priceFor(p);
+  const targetProgress=TIER_PROGRESS[targetTier];
   renderEstimate(p);
-  const duration=reduced?200:(videoMode?1500:1100);
-  const start=performance.now();
 
-  return new Promise(resolve=>{
-    function frame(now){
-      const raw=Math.min(1,(now-start)/duration);
-      const eased=easeOutCubic(raw);
-
-      $('#priceValue').textContent=fmtPrice(targetPrice*eased);
-
-      const stage=targetTier===0
-        ?0
-        :Math.min(targetTier,Math.floor(raw*(targetTier+1)));
-
-      setTierVisual(stage);
-
-      if(raw<1){
-        requestAnimationFrame(frame);
-      }else{
-        setTierVisual(targetTier);
-        $('#priceValue').textContent=fmtPrice(targetPrice);
-        $('#featureList').innerHTML=featuresFor(p).map(x=>'<span>'+x+'</span>').join('');
-        resolve();
-      }
+  const applyProgress=raw=>{
+    const clamped=Math.max(0,Math.min(1,raw));
+    const eased=easeOutCubic(clamped);
+    const progress=targetProgress*eased;
+    let stage=0;
+    for(let i=1;i<=targetTier;i++){
+      const threshold=(TIER_PROGRESS[i-1]+TIER_PROGRESS[i])*.5;
+      if(progress>=threshold)stage=i;
     }
+    setTierVisual(stage,progress);
+    $('#priceValue').textContent=fmtPrice(targetPrice*eased);
+  };
 
+  const animatePhase=(from,to,duration)=>new Promise(resolve=>{
+    const start=performance.now();
+    function frame(now){
+      const t=Math.min(1,(now-start)/Math.max(1,duration));
+      applyProgress(from+(to-from)*t);
+      if(t<1)requestAnimationFrame(frame);
+      else resolve();
+    }
     requestAnimationFrame(frame);
   });
+
+  if(reduced){
+    applyProgress(1);
+  }else if(targetTier>=3){
+    const holdAt=targetTier===4?.78:.72;
+    await animatePhase(0,holdAt,targetTier===4?1350:1100);
+    $('#app').classList.add('rarity-suspense');
+    $('#studioStatus').textContent=targetTier===4?'ЛЕГЕНДАРНОЕ СОЧЕТАНИЕ':'ОЧЕНЬ РЕДКОЕ СОЧЕТАНИЕ';
+    haptic('selection');
+    await sleep(targetTier===4?850:620);
+    $('#app').classList.remove('rarity-suspense');
+    await animatePhase(holdAt,1,targetTier===4?1250:900);
+  }else{
+    await animatePhase(0,1,videoMode?1500:1100);
+  }
+
+  setTierVisual(targetTier,targetProgress);
+  $('#priceValue').textContent=fmtPrice(targetPrice);
+  $('#featureList').innerHTML=featuresFor(p).map(x=>'<span>'+x+'</span>').join('');
 }
 
 function saveCurrent(){
