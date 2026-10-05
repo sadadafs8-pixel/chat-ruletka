@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#101113">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>НОМЕР — коллекция редких сочетаний</title>
+  <meta name="description" content="Открывай российские автономера, собирай редкие сочетания и сравнивай их ориентировочную стоимость.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='10' fill='%23101113'/%3E%3Ctext x='20' y='29' text-anchor='middle' font-family='Arial' font-weight='bold' font-size='26' fill='%23d2bb8a'%3EН%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="plates.css?v=12.3">
+  <script src="https://telegram.org/js/telegram-web-app.js" defer></script>
+  <script src="plate-engine.js?v=1" defer></script>
+  <script src="plates.js?v=12.6" defer></script>
+</head>
+<body>
+  <div class="app" id="app">
+    <div class="ambient-glow"></div>
+    <div class="grain"></div>
+
+    <div class="studio-header hidden" id="studioHeader"><button id="studioExit" aria-label="Выйти из режима видео">←</button><span>НОМЕР<small>PLATE HUNT</small></span><span class="studio-format">9:16</span></div>
+    <header class="topbar">
+      <button class="menu-button" id="menuBtn" aria-label="Открыть меню">
+        <span></span><span></span><span></span>
+      </button>
+
+      <div class="wordmark">НОМЕР<span>PRIVATE COLLECTION</span></div>
+      <div class="top-actions">
+        <div class="wallet">
+          <span>ИГРОВОЙ БАЛАНС</span>
+          <strong id="balanceValue">1 000 000 ₽</strong>
+        </div>
+        <button class="save-button" id="saveBtn" aria-label="Сохранить номер">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M6.5 3.5h11v17l-5.5-3.4-5.5 3.4z"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="toolbar">    <button class="region-chip" id="regionBtn">
+      <span class="flag-small"></span>
+      <span id="regionLabel">Россия · все регионы</span>
+      <span class="chevron">⌄</span>
+    </button>
+
+<button class="toolbar-collection" id="collectionNav" aria-label="Открыть коллекцию"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M8 5v14m8-14v14M3 12h18"/></svg>Коллекция</button></div>
+    <div class="session-nav"><button id="historyNav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 10a9 9 0 1 1 1 7M3 4v6h6M12 7v5l3 2"/></svg>История <span id="historyCount">0</span></button></div>
+    <div class="studio-copy"><span id="studioAttempt">ОТКРЫТИЕ № 001</span><h1 id="studioHeadline">Что выпадет на этот раз?</h1><p id="studioBonus">СЛУЧАЙНОЕ ОТКРЫТИЕ</p></div>
+    <main class="hunt-screen">
+      <div class="section-heading"><span>ТВОЙ СЛЕДУЮЩИЙ ТРОФЕЙ</span><span class="edition">№ 001 / RUS</span></div>
+      <section class="previous-slot hidden" id="previousSlot">
+        <span class="previous-label">ПРЕДЫДУЩИЙ</span>
+        <div class="previous-plate" id="previousPlate"></div>
+        <div class="previous-caption">
+          <span id="previousTier">Обычный</span>
+          <strong id="previousPrice">0 ₽</strong>
+        </div>
+      </section>
+
+      <section class="current-zone">
+        <div class="display-header"><span id="studioStatus">КОЛЛЕКЦИОННЫЙ ЭКЗЕМПЛЯР</span><span class="display-dot"></span></div>
+        <div class="rarity-ladder" id="rarityLadder" aria-label="Шкала редкости">
+          <div class="rarity-ladder-labels" aria-hidden="true">
+            <span>Обычный</span><span>Необычный</span><span>Редкий</span><span>Эпик</span><span>Легенда</span>
+          </div>
+          <div class="rarity-scale" id="rarityScale">
+            <i></i><i></i><i></i><i></i><i></i>
+            <b class="rarity-marker" aria-hidden="true"></b>
+          </div>
+        </div>
+        <div class="plate-host" id="currentPlate"></div>
+        <div class="features" id="featureList"></div>
+        <div class="plate-caption">РОССИЙСКАЯ ФЕДЕРАЦИЯ <span>АВТОНОМЕР</span></div>
+      <section class="rarity-card">
+        <div class="rarity-head">
+          <span id="rarityName">Обычный</span>
+          <strong id="priceValue">0 ₽</strong>
+        </div>
+      </section>
+
+        <div class="estimate-line"><span>Ориентир рынка</span><button id="priceInfoBtn" aria-label="Как считается стоимость">i</button></div>
+        <div id="estimateRange" class="estimate-range"></div>
+        <div class="current-actions hidden" id="currentActions">
+          <button class="collection-current" id="collectionCurrentBtn" type="button" aria-label="Добавить номер в коллекцию">
+            <span class="collection-current-icon">＋</span>
+            <span id="collectionCurrentLabel">В коллекцию</span>
+          </button>
+          <button class="sell-current" id="sellCurrentBtn" type="button">
+            <span>Продать</span>
+            <strong id="sellCurrentPrice">0 ₽</strong>
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <div class="roll-section"><div class="roll-intro"><span>ОДНО НАЖАТИЕ.</span><strong>Новая история.</strong></div>
+    <button class="roll-orb" id="rollBtn" aria-label="Выбить номер за 1000 рублей">
+      <span class="play-icon"></span>
+      <span class="loading-dot"></span>
+      <span class="roll-label">Открыть номер</span><span class="roll-cost">1 000 ₽</span>
+      <span class="lucky-badge hidden" id="luckyBadge">УДАЧА ×10</span>
+    </button>
+
+    </div><p class="studio-hint">Включи запись экрана и открой номер.<br>Это игровой баланс, реальные деньги не используются.</p><footer class="app-footer"><span>ВИРТУАЛЬНАЯ КОЛЛЕКЦИЯ</span><button id="promoNav">Промокод <span>↗</span></button></footer>
+    <div class="drawer-backdrop" id="drawerBackdrop"></div>
+
+    <aside class="drawer" id="drawer" aria-hidden="true" inert>
+      <div class="drawer-head">
+        <div>
+          <p>НОМЕР</p>
+          <span>RUSSIAN PLATE HUNT</span>
+        </div>
+        <button class="drawer-close" id="drawerClose" aria-label="Закрыть">×</button>
+      </div>
+
+      <div class="drawer-summary">
+        <div>
+          <span>В коллекции</span>
+          <strong id="drawerOwned">0</strong>
+        </div>
+        <div>
+          <span>Выбито</span>
+          <strong id="rollCounter">0</strong>
+        </div>
+      </div>
+
+      <nav class="drawer-nav">
+        <button data-action="hunt" class="active">
+          <span class="nav-icon">◉</span>
+          <span><b>Выбивать</b><small>Главный экран</small></span>
+        </button>
+        <button data-action="collection">
+          <span class="nav-icon">▦</span>
+          <span><b>Коллекция</b><small>Сохранённые номера</small></span>
+        </button>
+        <button data-action="history"><span class="nav-icon">◷</span><span><b>История открытий</b><small>Последние 500 номеров</small></span></button>
+        <button data-action="rarity">
+          <span class="nav-icon">◇</span>
+          <span><b>Редкости</b><small>Шкала и стоимость</small></span>
+        </button>
+        <button data-action="region">
+          <span class="nav-icon">◎</span>
+          <span><b>Регион</b><small id="drawerRegion">Все регионы</small></span>
+        </button>
+        <button data-action="receive">
+          <span class="nav-icon">↘</span>
+          <span><b>Получить номер</b><small>Ввести код передачи</small></span>
+        </button>
+        <button data-action="promo">
+          <span class="nav-icon">✦</span>
+          <span><b>Промокод</b><small id="promoStatus">Активировать бонус</small></span>
+        </button>
+        <button data-action="settings">
+          <span class="nav-icon">⚙</span>
+          <span><b>Настройки</b><small>Анимация и вибрация</small></span>
+        </button>
+      </nav>
+
+      <div class="drawer-foot">НОМЕР · v12.6</div>
+    </aside>
+
+    <section class="panel" id="panel" aria-hidden="true" inert>
+      <div class="panel-head">
+        <div>
+          <p id="panelEyebrow">НОМЕР</p>
+          <h2 id="panelTitle">Коллекция</h2>
+        </div>
+        <button id="panelClose" aria-label="Закрыть">×</button>
+      </div>
+      <div class="panel-body" id="panelBody"></div>
+    </section>
+
+    <div class="toast" id="toast" role="status"></div>
+  </div>
+</body>
+</html>
