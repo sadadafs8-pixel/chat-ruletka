@@ -247,15 +247,15 @@ function glyphPath(ch,x,y,w,h){
   const [x0,y0,x1,y1]=g.b,sx=w/(x1-x0),sy=h/(y1-y0);
   return `<path d="${g.d}" transform="translate(${x-sx*x0} ${y+sy*y1}) scale(${sx} ${-sy})"/>`;
 }
-const PLATE_X=[46,105,163,221,282,333];
+const PLATE_X=[45,99,153,207,263,317];
 function slotPath(ch,i){
   const digit=i>0&&i<4;
-  return glyphPath(ch,PLATE_X[i]-(digit?22:19),digit?18:36,digit?44:38,digit?76:58);
+  return glyphPath(ch,PLATE_X[i]-(digit?23.5:21),digit?16:33,digit?47:42,digit?80:64);
 }
 function regionPaths(code){
-  const r=String(code),w=r.length===3?27:34,gap=r.length===3?6:9;
+  const r=String(code),w=r.length===3?30:37,gap=r.length===3?4.5:7;
   const start=441-(r.length*w+(r.length-1)*gap)/2;
-  return [...r].map((c,i)=>glyphPath(c,start+i*(w+gap),14,w,56)).join('');
+  return [...r].map((c,i)=>glyphPath(c,start+i*(w+gap),11,w,61)).join('');
 }
 function updateSlot(node,ch,index){node.innerHTML=slotPath(ch,index);}
 function plate(p){
@@ -267,13 +267,13 @@ function plate(p){
       <pattern id="${id}-texture" width="3" height="3" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".3" fill="#454d3c" opacity=".12"/></pattern>
       <filter id="${id}-emboss" x="-3%" y="-3%" width="106%" height="108%"><feDropShadow dx="0" dy=".6" stdDeviation=".2" flood-color="#fff" flood-opacity=".95"/></filter>
     </defs>
-    <rect x=".7" y=".7" width="518.6" height="110.6" rx="5.5" fill="url(#${id}-metal)" stroke="#8f9491" stroke-width="1.4"/>
-    <rect x="3" y="3" width="514" height="106" rx="4" fill="url(#${id}-face)" stroke="#fff" stroke-width="1.2"/>
-    <rect x="5.5" y="5.5" width="509" height="101" rx="3.5" fill="url(#${id}-texture)" stroke="#171b18" stroke-width="3"/>
-    <path d="M374 6v100" stroke="#171b18" stroke-width="2.8"/>
+    <rect x=".7" y=".7" width="518.6" height="110.6" rx="5.5" fill="url(#${id}-metal)" stroke="#8f9491" stroke-width="1"/>
+    <rect x="2.7" y="2.7" width="514.6" height="106.6" rx="4" fill="url(#${id}-face)" stroke="#fff" stroke-width=".8"/>
+    <rect x="5.5" y="5.5" width="509" height="101" rx="3.5" fill="url(#${id}-texture)" stroke="#171b18" stroke-width="1.8"/>
+    <path d="M374 6.5v99" stroke="#171b18" stroke-width="1.8"/>
     <g fill="#090d0a" filter="url(#${id}-emboss)">${chars.map((c,i)=>`<g class="gost-char">${slotPath(c,i)}</g>`).join('')}<g class="gost-region">${regionPaths(p.r)}</g></g>
-    <text x="387" y="95" class="gost-rus">RUS</text>
-    <g><rect x="441" y="79" width="39" height="18" fill="#fff" stroke="#969c97" stroke-width=".5"/><path d="M441 88h39" stroke="#164fa2" stroke-width="6"/><path d="M441 94h39" stroke="#c52832" stroke-width="6"/></g>
+    <text x="401" y="95" class="gost-rus">RUS</text>
+    <g><rect x="443" y="79" width="38" height="18" fill="#fff" stroke="#969c97" stroke-width=".45"/><path d="M443 88h38" stroke="#164fa2" stroke-width="6"/><path d="M443 94h38" stroke="#c52832" stroke-width="6"/></g>
     <g fill="#888e89" stroke="#d8ddd6" stroke-width="1"><circle cx="16" cy="56" r="2.3"/><circle cx="503" cy="56" r="2.3"/></g>
   </svg></div>`;
 }
@@ -288,11 +288,11 @@ function setTierVisual(index,progress=TIER_PROGRESS[index]??0){
   const scale=$('#rarityScale');
   if(scale)scale.style.setProperty('--rarity-progress',pct+'%');
 
-  $('#rarityScale i').forEach((el,i)=>{
+  document.querySelectorAll('#rarityScale i').forEach((el,i)=>{
     el.classList.toggle('active',i<=safeIndex);
     el.classList.toggle('current',i===safeIndex);
   });
-  $('.rarity-ladder-labels span').forEach((el,i)=>{
+  document.querySelectorAll('.rarity-ladder-labels span').forEach((el,i)=>{
     el.classList.toggle('passed',i<safeIndex);
     el.classList.toggle('current',i===safeIndex);
   });
