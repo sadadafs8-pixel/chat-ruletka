@@ -1374,7 +1374,6 @@ $('#collectionNav').onclick=renderCollection;
 $('#priceInfoBtn').onclick=renderRarity;
 $('#promoNav').onclick=renderPromo;
 $('#historyNav').onclick=renderHistory;
-$('#studioNav').onclick=()=>setVideoMode(true);
 $('#studioExit').onclick=()=>setVideoMode(false);
 $('#sellCurrentBtn').onclick=sellCurrent;
 $('#collectionCurrentBtn').onclick=saveCurrent;
@@ -1423,9 +1422,19 @@ renderCurrent();
 updatePrevious(state.previous);
 updateSellButton();
 
+function enterAppFullscreen(){
+  try{tg?.expand()}catch{}
+  try{tg?.disableVerticalSwipes?.()}catch{}
+  try{
+    if(tg?.requestFullscreen && !tg?.isFullscreen)tg.requestFullscreen();
+  }catch{}
+}
+
 try{
   tg?.ready();
-  tg?.expand();
   tg?.setHeaderColor('#101113');
   tg?.setBackgroundColor('#101113');
-}catch{};
+  tg?.setBottomBarColor?.('#101113');
+}catch{}
+enterAppFullscreen();
+document.addEventListener('pointerdown',enterAppFullscreen,{once:true,passive:true});
