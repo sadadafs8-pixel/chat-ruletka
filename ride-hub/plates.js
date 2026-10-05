@@ -891,17 +891,32 @@ async function analyze(p,reduced){
   const targetProgress=TIER_PROGRESS[targetTier];
   renderEstimate(p);
 
+  // Чем дороже номер, тем дольше идёт оценка и накрутка суммы.
+  // Верхний предел оставляем достаточно коротким, чтобы открытие не утомляло.
+  const revealDuration=
+    targetPrice>=10000000?5200:
+    targetPrice>=5000000?4500:
+    targetPrice>=2000000?3900:
+    targetPrice>=800000?3200:
+    targetPrice>=300000?2700:
+    targetPrice>=150000?2300:
+    targetPrice>=25000?1600:
+    targetPrice>=5000?1150:900;
+
   const applyProgress=raw=>{
     const clamped=Math.max(0,Math.min(1,raw));
-    const eased=easeOutCubic(clamped);
-    const progress=targetProgress*eased;
+    const rarityEased=easeOutCubic(clamped);
+    const progress=targetProgress*rarityEased;
     let stage=0;
     for(let i=1;i<=targetTier;i++){
       const threshold=(TIER_PROGRESS[i-1]+TIER_PROGRESS[i])*.5;
       if(progress>=threshold)stage=i;
     }
     setTierVisual(stage,progress);
-    $('#priceValue').textContent=fmtPrice(targetPrice*eased);
+
+    // Деньги идут почти линейно: дорогая сумма не появляется почти целиком
+    // в первую секунду, а реально докручивается до самого финала.
+    $('#priceValue').textContent=fmtPrice(targetPrice*clamped);
   };
 
   const animatePhase=(from,to,duration)=>new Promise(resolve=>{
@@ -918,16 +933,20 @@ async function analyze(p,reduced){
   if(reduced){
     applyProgress(1);
   }else if(targetTier>=3){
-    const holdAt=targetTier===4?.78:.72;
-    await animatePhase(0,holdAt,targetTier===4?1350:1100);
+    const holdAt=targetTier===4?.76:.70;
+    const firstPhase=Math.round(revealDuration*.46);
+    const suspensePhase=Math.round(revealDuration*.18);
+    const finalPhase=Math.round(revealDuration*.36);
+
+    await animatePhase(0,holdAt,firstPhase);
     $('#app').classList.add('rarity-suspense');
     $('#studioStatus').textContent=targetTier===4?'ЛЕГЕНДАРНОЕ СОЧЕТАНИЕ':'ОЧЕНЬ РЕДКОЕ СОЧЕТАНИЕ';
     haptic('selection');
-    await sleep(targetTier===4?850:620);
+    await sleep(suspensePhase);
     $('#app').classList.remove('rarity-suspense');
-    await animatePhase(holdAt,1,targetTier===4?1250:900);
+    await animatePhase(holdAt,1,finalPhase);
   }else{
-    await animatePhase(0,1,videoMode?1500:1100);
+    await animatePhase(0,1,revealDuration);
   }
 
   setTierVisual(targetTier,targetProgress);
