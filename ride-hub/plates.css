@@ -43,3 +43,26 @@
 @media(min-width:700px){.video-mode{min-height:960px;max-height:none;width:540px;margin:20px auto;border:1px solid #ffffff0e;border-radius:20px}.video-mode .studio-copy{padding-top:60px}}
 @media(max-height:740px) and (max-width:699px){.session-nav{margin-bottom:17px}.video-mode .studio-copy{padding-top:24px}.studio-copy h1{font-size:28px;margin-block:12px}.video-mode .display-header{margin-bottom:16px}.video-mode .rarity-card{padding-top:16px}.video-mode .rarity-head{gap:12px}.video-mode .features{margin-top:20px}.video-mode .roll-section{padding-top:18px}.video-mode .studio-hint{margin-top:7px}}
 @media(max-width:359px){.history-list{grid-template-columns:1fr}.history-card{padding:15px 18px}.history-plate{max-width:245px;margin:auto}.history-meta{font-size:9px}.history-value{font-size:10px}.history-value strong{font-size:14px}.history-tools{grid-template-columns:1fr}.video-mode{padding-inline:15px}}
+
+
+/* v12.1 — restored top rarity ladder */
+.rarity-ladder{margin:-6px 0 22px;padding:0 1px;position:relative;z-index:3}
+.rarity-ladder-labels{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:8px}
+.rarity-ladder-labels span{min-width:0;text-align:center;font-size:6px;letter-spacing:.035em;color:#555a58;white-space:nowrap;transition:color .18s ease,opacity .18s ease,text-shadow .18s ease;opacity:.66}
+.rarity-ladder-labels span.passed{color:#858b86;opacity:.86}
+.rarity-ladder-labels span.current{color:var(--tier);opacity:1;text-shadow:0 0 12px color-mix(in srgb,var(--tier) 48%,transparent)}
+.rarity-scale{--rarity-progress:0%;position:relative;display:grid;grid-template-columns:repeat(5,1fr);gap:5px;height:7px;margin:0}
+.rarity-scale i{height:4px;align-self:center;background:#ffffff0b;border-radius:999px;transition:background .18s ease,box-shadow .18s ease,transform .18s ease}
+.rarity-scale i.active{background:color-mix(in srgb,var(--tier) 72%,#8c928d);box-shadow:0 0 8px color-mix(in srgb,var(--tier) 26%,transparent)}
+.rarity-scale i.current{transform:scaleY(1.45)}
+.rarity-marker{position:absolute;z-index:5;left:var(--rarity-progress);top:50%;width:10px;height:10px;border-radius:50%;background:var(--tier);border:2px solid #1b1d1c;box-shadow:0 0 0 1px color-mix(in srgb,var(--tier) 55%,#fff),0 0 18px color-mix(in srgb,var(--tier) 55%,transparent);transform:translate(-50%,-50%);will-change:left}
+.rarity-card>.rarity-scale{display:none}
+.app.rarity-suspense .rarity-marker{animation:rarityHold .58s ease-in-out infinite alternate}
+.app.rarity-suspense .current-zone{border-color:color-mix(in srgb,var(--tier) 48%,#ffffff14);box-shadow:0 22px 44px #0004,inset 0 1px #ffffff09,0 0 32px color-mix(in srgb,var(--tier) 12%,transparent)}
+.app.rarity-suspense .rarity-ladder{filter:brightness(1.18)}
+@keyframes rarityHold{to{transform:translate(-50%,-50%) scale(1.38);box-shadow:0 0 0 3px color-mix(in srgb,var(--tier) 12%,transparent),0 0 28px color-mix(in srgb,var(--tier) 72%,transparent)}}
+.video-mode .rarity-ladder{margin:0 0 24px}
+.video-mode .rarity-ladder-labels span{font-size:6px}
+.video-mode .rarity-scale{width:100%;height:8px;margin:0}
+.video-mode .rarity-marker{width:11px;height:11px}
+@media(max-width:390px){.rarity-ladder-labels span{font-size:5.5px;letter-spacing:0}.rarity-ladder{margin-bottom:19px}}
