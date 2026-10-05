@@ -1,0 +1,22 @@
+name: Sync NOMER Telegram Bot
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sync-nomer-bot.yml'
+      - 'zub-bot/server.js'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update Telegram menu button
+        env:
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          MINI_APP_URL: https://sadadafs8-pixel.github.io/chat-ruletka/?v=12.6
+        run: |
+          test -n "$BOT_TOKEN"
+          curl --fail-with-body --silent --show-error             --get "https://api.telegram.org/bot${BOT_TOKEN}/setChatMenuButton"             --data-urlencode 'menu_button={"type":"web_app","text":"Открыть НОМЕР","web_app":{"url":"'${MINI_APP_URL}'"}}'
+          curl --fail-with-body --silent --show-error             --get "https://api.telegram.org/bot${BOT_TOKEN}/setMyCommands"             --data-urlencode 'commands=[{"command":"start","description":"Открыть НОМЕР"},{"command":"app","description":"Открыть коллекцию номеров"},{"command":"help","description":"Как играть"}]'
