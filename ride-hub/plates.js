@@ -10,10 +10,10 @@ const START_BALANCE=1000000;
 
 const DISPLAY_TIERS=[
   {name:'Обычный',color:'#8b94a2',min:300,max:4999,desc:'Случайный номер без красивой комбинации. Почти без ценности.'},
-  {name:'Необычный',color:'#35e982',min:5000,max:24999,desc:'Небольшой рисунок: зеркало, последовательность или лёгкий повтор.'},
-  {name:'Редкий',color:'#318dff',min:25000,max:149999,desc:'Ровные числа и заметные комбинации.'},
+  {name:'Необычный',color:'#35e982',min:5000,max:24999,desc:'Лёгкие повторы и простые сочетания с небольшим спросом.'},
+  {name:'Редкий',color:'#318dff',min:25000,max:149999,desc:'Зеркала, последовательности 123 / 321 и ровные числа.'},
   {name:'Эпический',color:'#a15aff',min:150000,max:799999,desc:'Тройки, низкие номера, одинаковые буквы и сильные сочетания.'},
-  {name:'Легендарный',color:'#f0a51a',min:800000,max:30000000,desc:'001, 007, 777, топовые сочетания и редкие спецсерии.'}
+  {name:'Легендарный',color:'#f0a51a',min:800000,max:30000000,desc:'Сильные сочетания цифр и букв, столичные коды и избранные серии.'}
 ];
 
 const storageKey='nomer-v7-'+(tg?.initDataUnsafe?.user?.id||'local');
@@ -136,139 +136,62 @@ function parseTransferCode(code){
   return {plate:payload.p,token:parts[2]+':'+payload.p.id};
 }
 
+// Calibrated against asking prices on 2026-10-05, not completed sales.
+// Ordinary plates: collectible premium only; transaction costs are excluded.
 function regionPriceMultiplier(code,base){
-  const r=String(code);
-
-  // Region only adds a premium to numbers that are already valuable.
-  if(base<150000)return 1;
-
-  if(r==='77')return base>=800000?1.45:1.16;
-  if(['97','99','177','197','199'].includes(r))return base>=800000?1.30:1.12;
-  if(r==='777')return base>=800000?1.24:1.10;
-  if(['797','799','977','997'].includes(r))return base>=800000?1.18:1.08;
-  if(['50','90','150','190','250','550','750','790'].includes(r))return base>=800000?1.12:1.05;
-  if(['78','98','178','198'].includes(r))return base>=800000?1.14:1.06;
-
+  if(base<5000)return 1;
+  if(code==='77')return 1.7;
+  if(['97','99','177','197','199'].includes(code))return 1.45;
+  if(['777','797','799','977','997'].includes(code))return 1.35;
+  if(['50','90','150','190','250','550','750','790'].includes(code))return 1.2;
+  if(['78','98','178','198'].includes(code))return 1.25;
   return 1;
 }
 
 function marketPriceFor(p){
-  const n=String(p.n);
-  const letters=String(p.a)+String(p.b)+String(p.c);
-  const region=String(p.r);
-  const numeric=Number(n);
-  const h=hashString(key(p));
-
-  const sameDigits=n[0]===n[1]&&n[1]===n[2];
-  const sameLetters=letters[0]===letters[1]&&letters[1]===letters[2];
-  const twoSameLetters=new Set(letters).size===2;
-  const repeatedDigits=new Set(n).size<3;
-  const mirror=n[0]===n[2]&&!sameDigits;
-  const sequence=['123','234','345','456','567','678','789','987','876','765','654','543','432','321'].includes(n);
-  const roundHundred=numeric>0&&numeric%100===0;
-  const roundTen=numeric>=10&&numeric<100&&numeric%10===0;
-  const firstTen=numeric>=1&&numeric<=9;
-  const regionDigits=String(Number(region));
-  const matchesRegion=regionDigits&&(n===regionDigits.padStart(3,'0')||n.endsWith(regionDigits));
-
-  // Ordinary random plates have almost no premium.
-  let price=350+((h%7)*100);
-
-  // Weak patterns should stay cheap.
-  if(repeatedDigits)price=1200+((h%7)*250);
-  if(mirror)price=5000+((h%7)*700);
-  if(sequence)price=10000+((h%7)*1300);
-
-  // Rounded numbers get a moderate premium.
-  if(roundHundred)price=28000+((h%7)*4500);
-  if(roundTen)price=42000+((h%7)*5500);
-
-  // Very low numbers are genuinely valuable.
-  if(firstTen){
-    const lowPrices={
-      '001':1200000,
-      '002':560000,
-      '003':520000,
-      '004':500000,
-      '005':620000,
-      '006':500000,
-      '007':1050000,
-      '008':680000,
-      '009':650000
-    };
-    price=lowPrices[n]||520000;
+  const n=String(p.n), letters=p.a+p.b+p.c, region=String(p.r);
+  const h=hashString(key(p)), num=Number(n);
+  const triple=/^(.)\1\1$/.test(n), same=/^(.)\1\1$/.test(letters);
+  const mirror=n[0]===n[2]&&!triple;
+  let price=350+(h%7)*100;
+  // A random pair of repeated characters alone is not a valuable pattern.
+  if(new Set(n).size===2)price=1100+(h%6)*300;
+  if(mirror)price=n[1]==='0'?55000:28000;
+  if(['123','321'].includes(n))price=60000;
+  else if(['234','345','456','567','678','789','987','876','765','654','543','432','210'].includes(n))price=35000;
+  if(num%100===0)price=85000;
+  if(num>=10&&num<100&&num%10===0)price=105000;
+  if(num>0&&num<10)price=({'001':750000,'002':320000,'003':290000,'004':220000,'005':340000,'006':230000,'007':650000,'008':330000,'009':310000})[n];
+  if(triple)price=({'111':340000,'222':300000,'333':320000,'444':260000,'555':390000,'666':280000,'777':700000,'888':480000,'999':440000})[n]||300000;
+  if(new Set(letters).size===2)price+=price>=25000?7000:400;
+  if(same){
+    const letterBase={А:550000,М:500000,О:550000,Х:450000,В:340000,С:380000,Е:320000,К:320000,Н:300000,Р:320000,Т:290000,У:260000}[p.a];
+    price=letterBase+(price>=25000?price*2.2:0);
   }
+  // Only a FULL numerical match counts: 178 in region 178, or 052 in 52.
+  if(num===Number(region))price=Math.max(110000,price*1.45);
+  // Collector-series premium must be region-specific, never universal.
+  const seriesFloor={
+    'АМР:97':4500000,'АМР:77':1700000,
+    'ЕКХ:77':1800000,'ЕКХ:97':1200000,'ЕКХ:99':1200000,
+    'АМО:77':900000,'АММ:77':650000
+  }[letters+':'+region];
+  if(seriesFloor)price=Math.max(price,seriesFloor+(triple||num<10?price*.5:0));
+  else price*=regionPriceMultiplier(region,price);
+  const variation=.94+(h%1000)/999*.12;
+  price*=variation;
+  const step=price<5000?100:price<25000?500:price<150000?1000:price<800000?5000:10000;
+  return Math.max(300,Math.min(30000000,Math.round(price/step)*step));
+}
 
-  // Triple digits remain a strong category.
-  if(sameDigits){
-    const triplePrices={
-      '111':520000,
-      '222':420000,
-      '333':460000,
-      '444':390000,
-      '555':520000,
-      '666':360000,
-      '777':1250000,
-      '888':720000,
-      '999':680000,
-      '000':800000
-    };
-    price=triplePrices[n]||500000;
-  }
+function marketRange(p){
+  const value=priceFor(p),step=value<5000?100:value<100000?1000:10000;
+  return [Math.max(0,Math.round(value*.7/step)*step),Math.round(value*1.4/step)*step];
+}
 
-  // Two matching letters add almost nothing unless the digits are already good.
-  if(twoSameLetters&&!sameLetters){
-    price+=price>=25000?2500:500;
-  }
-
-  // Three identical letters are a serious premium.
-  if(sameLetters){
-    price=Math.max(price,700000);
-  }
-
-  // Region matching should not turn a bad number into an expensive one.
-  if(matchesRegion){
-    if(price<25000)price+=1000;
-    else if(price<150000)price+=5000;
-    else price*=1.06;
-  }
-
-  const specialSeries={
-    'АМР':5200000,
-    'ЕКХ':2400000,
-    'СКР':1800000,
-    'АМО':1200000,
-    'АММ':650000
-  };
-
-  if(specialSeries[letters]){
-    price=Math.max(price,specialSeries[letters]);
-  }
-
-  price*=regionPriceMultiplier(region,price);
-
-  if(n==='777'&&region==='77')price*=1.28;
-  if(n==='001'&&region==='77')price*=1.20;
-  if(n==='007'&&region==='77')price*=1.16;
-
-  const variance=.97+((h%1000)/999)*.06;
-  price*=variance;
-
-  if(price<5000){
-    price=Math.round(price/100)*100;
-  }else if(price<25000){
-    price=Math.round(price/500)*500;
-  }else if(price<150000){
-    price=Math.round(price/1000)*1000;
-  }else if(price<800000){
-    price=Math.round(price/5000)*5000;
-  }else if(price<5000000){
-    price=Math.round(price/10000)*10000;
-  }else{
-    price=Math.round(price/50000)*50000;
-  }
-
-  return Math.max(300,Math.min(30000000,price));
+function renderEstimate(p){
+  const range=$('#estimateRange');
+  if(range)range.textContent=p?marketRange(p).map(fmtPrice).join(' — '):'Открой свой первый номер';
 }
 
 function priceFor(p){
@@ -290,12 +213,13 @@ function featuresFor(p){
   const n=p.n;
 
   if(n[0]===n[1]&&n[1]===n[2]) out.push('3 одинаковые цифры');
-  else if(new Set(n).size<3) out.push('Повтор цифр');
+  else if(n[0]!==n[2]&&new Set(n).size<3) out.push('Повтор цифр');
 
   if(letters[0]===letters[1]&&letters[1]===letters[2]) out.push('3 одинаковые буквы');
   else if(new Set(letters).size<3) out.push('Повтор букв');
 
-  if(n[0]===n[2]) out.push('Зеркальная комбинация');
+  if(n[0]===n[2]&&new Set(n).size>1) out.push('Зеркальная комбинация');
+  if(Number(n)<10)out.push('Первая десятка');
 
   if(['123','234','345','456','567','678','789','987','876','765','654','543','432','321','210'].includes(n)){
     out.push('Последовательность цифр');
@@ -304,9 +228,9 @@ function featuresFor(p){
   if(Number(n)%100===0) out.push('Ровная сотня');
 
   const regionDigits=String(Number(p.r));
-  if(regionDigits&&n.endsWith(regionDigits)) out.push('Цифры совпадают с регионом');
+  if(Number(n)===Number(regionDigits)) out.push('Цифры совпадают с регионом');
 
-  if(!out.length) out.push('Уникальная комбинация');
+  if(!out.length) out.push('Без особого сочетания');
 
   return out.slice(0,4);
 }
@@ -543,6 +467,7 @@ async function sellCurrent(){
   host.innerHTML='<div class="sold-empty"><b>НОМЕР ПРОДАН</b><span>Выбей следующий</span></div>';
   $('#featureList').innerHTML='';
   $('#priceValue').textContent='0 ₽';
+  renderEstimate(null);
   setTierVisual(0);
 
   renderStats();
@@ -554,6 +479,7 @@ async function sellCurrent(){
 
 function renderCurrent(){
   const p=state.current;
+  renderEstimate(p);
 
   if(!p){
     const demo={a:'А',n:'024',b:'В',c:'М',r:'252'};
@@ -779,7 +705,9 @@ function generateLegendary(region){
     ['А','М','Р'],
     ['Е','К','Х'],
     ['С','К','Р'],
-    ['А','М','О']
+    ['А','А','А'],
+    ['О','О','О'],
+    ['М','М','М']
   ];
   const premiumNumbers=['001','007','777','888','999','555'];
   const premiumRegions=['77','97','99','177','197','199','777','797','799'];
@@ -819,7 +747,7 @@ function generateLegendary(region){
   // Hard fallback that is always legendary in the current economy.
   const fallbackRegion=region==='all'?'77':region;
   const fallback=generate(fallbackRegion);
-  return {...fallback,a:'А',b:'М',c:'Р',n:'777'};
+  return {...fallback,a:'А',b:'А',c:'А',n:'777'};
 }
 
 const SLOT_LETTERS=['А','В','Е','К','М','Н','О','Р','С','Т','У','Х'];
@@ -930,6 +858,7 @@ async function roll(){
   const reduced=state.reduced||matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   busy=true;
+  $('#rollBtn').disabled=true;
   closeDrawer();
   closePanel();
 
@@ -946,6 +875,7 @@ async function roll(){
   $('#app').classList.add('rolling');
   $('#featureList').innerHTML='';
   $('#priceValue').textContent='0 ₽';
+  renderEstimate(null);
   setTierVisual(0);
   updateSellButton();
 
@@ -977,12 +907,14 @@ async function roll(){
   soundFinal(final);
   haptic(displayTier(final)>=4?'legendary':'success');
   busy=false;
+  $('#rollBtn').disabled=false;
 }
 
 async function analyze(p,reduced){
   const targetTier=displayTier(p);
   const targetPrice=priceFor(p);
-  const duration=reduced?260:2600;
+  renderEstimate(p);
+  const duration=reduced?200:1100;
   const start=performance.now();
 
   return new Promise(resolve=>{
@@ -1013,6 +945,7 @@ async function analyze(p,reduced){
 }
 
 function saveCurrent(){
+  if(busy)return;
   if(!state.current){
     showToast('Сначала выбей номер');
     return;
@@ -1053,12 +986,14 @@ function openDrawer(){
   $('#drawer').classList.add('open');
   $('#drawerBackdrop').classList.add('open');
   $('#drawer').setAttribute('aria-hidden','false');
+  $('#drawer').inert=false;
 }
 
 function closeDrawer(){
   $('#drawer').classList.remove('open');
   $('#drawerBackdrop').classList.remove('open');
   $('#drawer').setAttribute('aria-hidden','true');
+  $('#drawer').inert=true;
 }
 
 function openPanel(title,eyebrow='НОМЕР'){
@@ -1067,11 +1002,13 @@ function openPanel(title,eyebrow='НОМЕР'){
   $('#panelEyebrow').textContent=eyebrow;
   $('#panel').classList.add('open');
   $('#panel').setAttribute('aria-hidden','false');
+  $('#panel').inert=false;
 }
 
 function closePanel(){
   $('#panel').classList.remove('open');
   $('#panel').setAttribute('aria-hidden','true');
+  $('#panel').inert=true;
 }
 
 function renderCollection(){
@@ -1134,9 +1071,12 @@ function renderPlateDetail(id){
   };
 
   $('#sellOwned').onclick=()=>{
+    if(busy)return;
     const idx=state.collection.findIndex(x=>x.id===p.id);
     if(idx<0)return;
     state.collection.splice(idx,1);
+    if(state.current?.id===p.id)state.current=null;
+    renderCurrent();
     state.balance+=value;
     persist();
     renderStats();
@@ -1148,12 +1088,15 @@ function renderPlateDetail(id){
 }
 
 async function transferOwnedPlate(id){
+  if(busy)return;
   const idx=state.collection.findIndex(x=>x.id===id);
   if(idx<0)return;
   const p=state.collection[idx];
   const code=makeTransferCode(p);
 
   state.collection.splice(idx,1);
+  if(state.current?.id===p.id)state.current=null;
+  renderCurrent();
   state.transferredOut=[...state.transferredOut,p.id].slice(-1000);
   persist();
   renderStats();
@@ -1219,7 +1162,7 @@ function renderRarity(){
         <p>${d.desc}</p>
       </div>
     `).join('')+
-    '<div class="tier-item" style="--c:#f0a51a"><div class="tier-top"><b>Оценка рынка</b><strong>до 30 000 000 ₽</strong></div><p>Обычные номера стоят почти ничего. Высокая цена появляется только у реально сильных комбинаций и редких серий.</p></div></div>';
+    '<div class="tier-item" style="--c:#c9b58b"><div class="tier-top"><b>Как считается цена</b></div><p>Ориентир по объявлениям на 5 октября 2026 года: рисунок цифр, сочетание букв и регион. Диапазон отражает неопределённость. Это модель для игры, не подтверждённая цена сделки. У обычных номеров учитывается только коллекционная надбавка; расходы на оформление не включены.</p><p>Источники: <a href="https://rosnomer.com/ceny" target="_blank" rel="noopener">Росномер</a> · <a href="https://t.me/s/gosnomer52?before=1128" target="_blank" rel="noopener">Объявления по Нижегородской области</a></p><p>Баланс и продажа виртуальные. Коллекция сохраняется на этом устройстве.</p></div></div>';
 }
 
 function renderPromo(){
@@ -1233,7 +1176,7 @@ function renderPromo(){
         <span>✦</span>
         <div>
           <b>Супер-удачные прокрутки</b>
-          <small>SADA1 даёт +10 удачных прокруток. SADA2 даёт +100 легендарных прокруток — только номера стоимостью от 700 000 ₽. Оба кода можно использовать сколько угодно раз.</small>
+          <small>SADA1 даёт +10 удачных прокруток. SADA2 даёт +100 легендарных прокруток — только номера стоимостью от 800 000 ₽. Оба кода можно использовать сколько угодно раз.</small>
         </div>
       </div>
       <input
@@ -1369,7 +1312,10 @@ function renderRegion(){
   paint();
 }
 
-$('#rollBtn').onclick=roll;
+$('#rollBtn').onclick=()=>roll().catch(()=>{busy=false;$('#rollBtn').disabled=false;$('#app').classList.remove('rolling');renderCurrent();showToast('Не удалось завершить анимацию. Попробуй ещё раз.');});
+$('#collectionNav').onclick=renderCollection;
+$('#priceInfoBtn').onclick=renderRarity;
+$('#promoNav').onclick=renderPromo;
 $('#sellCurrentBtn').onclick=sellCurrent;
 $('#collectionCurrentBtn').onclick=saveCurrent;
 $('#saveBtn').onclick=saveCurrent;
@@ -1418,6 +1364,6 @@ updateSellButton();
 try{
   tg?.ready();
   tg?.expand();
-  tg?.setHeaderColor('#06080d');
-  tg?.setBackgroundColor('#06080d');
+  tg?.setHeaderColor('#101113');
+  tg?.setBackgroundColor('#101113');
 }catch{};
