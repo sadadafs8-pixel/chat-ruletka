@@ -4,7 +4,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const TOKEN=process.env.TELEGRAM_BOT_TOKEN;
 const PORT=Number(process.env.PORT||10000);
-const APP=process.env.MINI_APP_URL||'https://ride-hub-qr-test.onrender.com';
+const APP=process.env.MINI_APP_URL||'https://sadadafs8-pixel.github.io/chat-ruletka/';
 const TG=TOKEN?`https://api.telegram.org/bot${TOKEN}`:'';
 const ROOT=path.resolve(__dirname,'../ride-hub');
 const files={'/':['index.html','text/html; charset=utf-8'],'/index.html':['index.html','text/html; charset=utf-8'],'/plates.css':['plates.css','text/css; charset=utf-8'],'/plates.js':['plates.js','text/javascript; charset=utf-8'],'/plate-engine.js':['plate-engine.js','text/javascript; charset=utf-8']};
